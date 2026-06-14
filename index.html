@@ -5,25 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bowling Darts</title>
   <style>
-    :root{--bg:#0f172a;--panel:#111827;--card:#1f2937;--text:#e5e7eb;--muted:#94a3b8;--accent:#22c55e;--danger:#ef4444;--line:#334155;}
+    :root{
+      --bg:#0f172a; --panel:#111827; --card:#1f2937; --text:#e5e7eb; --muted:#94a3b8;
+      --accent:#22c55e; --accent2:#38bdf8; --danger:#ef4444; --line:#334155; --warn:#f59e0b;
+    }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#020617,#0f172a);color:var(--text)}
-    .wrap{max-width:1280px;margin:0 auto;padding:20px;display:grid;gap:16px}
+    .wrap{max-width:1400px;margin:0 auto;padding:20px;display:grid;gap:16px}
     .top{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
     .card{background:rgba(17,24,39,.94);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 18px 40px rgba(0,0,0,.22)}
-    h1,h2{margin:0 0 12px} h1{font-size:28px} h2{font-size:18px}
+    h1,h2,h3{margin:0 0 12px}
+    h1{font-size:28px} h2{font-size:18px} h3{font-size:16px;color:#fff}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     input,button{border-radius:12px;border:1px solid var(--line);background:#0b1220;color:var(--text);padding:12px 14px;font-size:16px}
-    button{cursor:pointer} button.primary{background:var(--accent);color:#052e16;border:none;font-weight:700} button.danger{background:var(--danger);border:none;color:white}
+    button{cursor:pointer}
+    button.primary{background:var(--accent);color:#052e16;border:none;font-weight:700}
+    button.blue{background:var(--accent2);color:#082f49;border:none;font-weight:700}
+    button.danger{background:var(--danger);border:none;color:white}
+    button.warn{background:var(--warn);border:none;color:#111827;font-weight:700}
     button:disabled{opacity:.45;cursor:not-allowed}
-    .status{font-size:22px;font-weight:800} .muted{color:var(--muted)}
+    .status{font-size:22px;font-weight:800}
+    .muted{color:var(--muted)}
     .message{padding:12px;border-radius:12px;background:#0b1220;border:1px solid var(--line);min-height:48px}
     .pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#0b1220;border:1px solid var(--line);font-size:12px}
     .legend{display:grid;gap:8px;color:var(--muted);font-size:14px}
     .board{overflow:auto}
-    table{width:100%;min-width:1100px;border-collapse:collapse}
+    table{width:100%;min-width:1120px;border-collapse:collapse}
     th,td{border:1px solid var(--line);padding:8px;text-align:center;vertical-align:top}
-    th{background:#0b1220;position:sticky;top:0}
+    th{background:#0b1220;position:sticky;top:0;z-index:1}
     td.name{text-align:left;font-weight:700;min-width:150px}
     td.total{font-weight:900;background:#0b1220;font-size:18px}
     .frameCell{min-width:92px}
@@ -33,7 +42,17 @@
     .activeRow{outline:2px solid var(--accent);outline-offset:-2px}
     .keypad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
     .keypad button{padding:10px 0;font-weight:700}
-    @media (max-width:900px){.top{grid-template-columns:1fr}.keypad{grid-template-columns:repeat(4,1fr)}}
+    .statsGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .statBox{background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px}
+    .statLabel{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .statValue{font-size:22px;font-weight:800}
+    .playerAvgGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .historyList{display:grid;gap:8px}
+    .historyItem{background:#0b1220;border:1px solid var(--line);border-radius:12px;padding:10px}
+    .historyTitle{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:700}
+    .historyMeta{margin-top:6px;color:var(--muted);font-size:13px}
+    @media (max-width:1100px){.top{grid-template-columns:1fr}.statsGrid,.playerAvgGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:700px){.statsGrid,.playerAvgGrid{grid-template-columns:1fr}.keypad{grid-template-columns:repeat(4,1fr)}}
   </style>
 </head>
 <body>
@@ -41,22 +60,23 @@
     <div class="top">
       <div class="card">
         <h1>Bowling Darts</h1>
-        <p class="muted">First dart selects the alley. Darts 2 and 3 score the selected alley. Miss is always 0.</p>
+        <p class="muted">First dart selects the alley. Darts 2 and 3 score the selected alley. Double on dart 1 or 2 ends the frame unless it is the 10th frame.</p>
         <div class="row">
           <input id="playerName" placeholder="Player name" />
           <button class="primary" id="addPlayerBtn">Add Player</button>
           <button id="startGameBtn">Start Game</button>
           <button class="danger" id="resetBtn">Reset</button>
+          <button class="warn" id="clearHistoryBtn">Clear History</button>
         </div>
         <div id="playersList" class="row" style="margin-top:12px"></div>
       </div>
       <div class="card">
         <h2>Rules</h2>
         <div class="legend">
-          <div><span class="pill">Dart 1</span> Choose alley: 1-20, or buttons.</div>
+          <div><span class="pill">Dart 1</span> Choose alley: 1-20 or buttons.</div>
           <div><span class="pill">Dart 2</span> Score points on the selected alley.</div>
           <div><span class="pill">Dart 3</span> Complete the frame, or spare/bonus if eligible.</div>
-          <div><span class="pill">Strike</span> Double on dart 2 ends the frame unless it is the 10th frame.</div>
+          <div><span class="pill">Strike</span> Double on dart 1 or dart 2 ends the frame unless it is the 10th frame.</div>
           <div><span class="pill">Symbols</span> Strike = X, Spare = /, Open = -.</div>
         </div>
         <div class="keypad" id="keypad"></div>
@@ -84,9 +104,26 @@
       <h2>Scoreboard</h2>
       <table id="scoreboard"></table>
     </div>
+
+    <div class="card">
+      <h2>Lifetime Stats</h2>
+      <div class="statsGrid" id="statsGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Player Averages</h2>
+      <div class="playerAvgGrid" id="playerAvgGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Match History</h2>
+      <div class="historyList" id="historyList"></div>
+    </div>
   </div>
 
 <script>
+const STORAGE_KEY = 'bowlingDartsHistoryV1';
+
 const points = { 'Miss':0, 'Triple':9, 'Outer Single':3, 'Double':10, 'Inner Single':7 };
 const alleyMap = {
   1:'Miss',2:'Triple',3:'Outer Single',4:'Double',5:'Inner Single',
@@ -101,12 +138,14 @@ let gameOver = false;
 let currentPlayer = 0;
 let frameIndex = 0;
 let dart = 1;
+let matchHistory = loadHistory();
 
 const els = {
   playerName: document.getElementById('playerName'),
   addPlayerBtn: document.getElementById('addPlayerBtn'),
   startGameBtn: document.getElementById('startGameBtn'),
   resetBtn: document.getElementById('resetBtn'),
+  clearHistoryBtn: document.getElementById('clearHistoryBtn'),
   missBtn: document.getElementById('missBtn'),
   tripleBtn: document.getElementById('tripleBtn'),
   outerBtn: document.getElementById('outerBtn'),
@@ -117,14 +156,21 @@ const els = {
   status: document.getElementById('status'),
   substatus: document.getElementById('substatus'),
   message: document.getElementById('message'),
-  keypad: document.getElementById('keypad')
+  keypad: document.getElementById('keypad'),
+  statsGrid: document.getElementById('statsGrid'),
+  playerAvgGrid: document.getElementById('playerAvgGrid'),
+  historyList: document.getElementById('historyList')
 };
 
-function emptyFrame(){
-  return { alley:null, d1:null, d2:null, d3:null, p1:0, p2:0, p3:0, total:0, locked:false };
+function loadHistory(){
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
 }
-function newPlayer(name){
-  return { name, frames:Array.from({length:10}, emptyFrame), total:0, finished:false };
+function saveHistory(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(matchHistory));
+}
+function average(arr) {
+  return arr.length ? arr.reduce((sum, n) => sum + n, 0) / arr.length : 0;
 }
 function resetGameState(){
   players = [];
@@ -134,17 +180,17 @@ function resetGameState(){
   frameIndex = 0;
   dart = 1;
 }
+function emptyFrame(){
+  return { alley:null, d1:null, d2:null, d3:null, p1:0, p2:0, p3:0, total:0, locked:false, result:'' };
+}
+function newPlayer(name){
+  return { name, frames:Array.from({length:10}, emptyFrame), total:0, finished:false };
+}
 function escapeHtml(s){
   return String(s).replace(/[&<>\"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 }
 function updatePlayersList(){
   els.playersList.innerHTML = players.map((p,i)=>`<span class="pill">${i+1}. ${escapeHtml(p.name)}</span>`).join('');
-}
-function symbolForFrame(f){
-  if(f.alley === 'Double' && f.d2 === 'Double') return 'X';
-  if((f.alley === 'Triple' || f.alley === 'Outer Single' || f.alley === 'Inner Single') && f.p2 + f.p3 === 10) return '/';
-  if(f.d1 || f.d2 || f.d3) return '';
-  return '-';
 }
 function throwSymbol(v){
   if(v === null || v === undefined) return '';
@@ -166,13 +212,19 @@ function frameDisplay(f){
 }
 function renderBoard(){
   const header = `<tr><th>Player</th>${Array.from({length:10},(_,i)=>`<th>F${i+1}</th>`).join('')}<th>Total</th></tr>`;
-  const rows = players.map((p,pi)=>`<tr class="${started && !gameOver && pi===currentPlayer ? 'activeRow' : ''}"><td class="name">${escapeHtml(p.name)}</td>${p.frames.map(f=>`<td class="frameCell">${frameDisplay(f)}</td>`).join('')}<td class="total">${p.total}</td></tr>`).join('');
+  const rows = players.map((p,pi)=>`<tr class="${started && !gameOver && pi===currentPlayer ? 'activeRow' : ''}">
+    <td class="name">${escapeHtml(p.name)}</td>
+    ${p.frames.map(f=>`<td class="frameCell">${frameDisplay(f)}</td>`).join('')}
+    <td class="total">${p.total}</td>
+  </tr>`).join('');
   els.scoreboard.innerHTML = header + rows;
 }
 function setMessage(msg){ els.message.textContent = msg; }
 function updateUI(){
   updatePlayersList();
   renderBoard();
+  renderStats();
+  renderHistory();
   if(!started){
     els.status.textContent = 'Add players to begin.';
     els.substatus.textContent = '';
@@ -228,6 +280,16 @@ function applyThrow(segment){
   if(dart === 1){
     f.alley = segment;
     f.d1 = segment;
+
+    if(segment === 'Double' && frameIndex < 9){
+      f.total = 10;
+      p.total += 10;
+      f.locked = true;
+      setMessage(`${p.name} strike on dart 1.`);
+      advanceTurn();
+      return;
+    }
+
     setMessage(`${p.name} selected ${segment}.`);
     dart = 2;
     updateUI();
@@ -237,16 +299,17 @@ function applyThrow(segment){
   if(dart === 2){
     f.d2 = segment;
     f.p2 = scoreForDart(f, segment, 2);
-    setMessage(`${p.name} dart 2: ${segment} (${f.p2} pins).`);
 
-    if(f.alley === 'Double' && segment === 'Double' && frameIndex < 9){
+    if(segment === 'Double' && frameIndex < 9){
       f.total = 10;
       p.total += 10;
       f.locked = true;
+      setMessage(`${p.name} strike on dart 2.`);
       advanceTurn();
       return;
     }
 
+    setMessage(`${p.name} dart 2: ${segment} (${f.p2} pins).`);
     dart = 3;
     updateUI();
     return;
@@ -265,6 +328,7 @@ function applyThrow(segment){
 }
 function scoreForDart(frame, segment, dartNum){
   if(segment === 'Miss') return 0;
+  if(segment === 'Double') return 10;
   if(dartNum === 2) return points[segment] || 0;
   if(dartNum === 3){
     if(segment === frame.alley && segment !== 'Miss') return 0;
@@ -276,7 +340,7 @@ function calculateFrameScore(f){
   const a = f.alley;
   const p2 = f.p2 || 0;
   const p3 = f.p3 || 0;
-  if(a === 'Double' && f.d2 === 'Double') return 10;
+  if(a === 'Double' && (f.d1 === 'Double' || f.d2 === 'Double')) return 10;
   if(a === 'Triple'){
     if(p2 === 9 && p3 === 9) return 20;
     if(p2 + p3 >= 10) return 15;
@@ -304,6 +368,7 @@ function advanceTurn(){
   if(frameIndex >= 10){
     gameOver = true;
     setMessage(`Game over. Winner: ${winnerName()}`);
+    finalizeMatch();
   }
   updateUI();
 }
@@ -319,15 +384,164 @@ function makeKeypad(){
     els.keypad.appendChild(b);
   }
 }
+function alleyMapValue(i){ return alleyMap[i]; }
+
 document.addEventListener('keydown', e => {
   if(!started || gameOver || dart !== 1) return;
-  if(/^[1-9]$/.test(e.key)) applyThrow(alleyMap[Number(e.key)]);
-  if(e.key === '0') applyThrow(alleyMap[10]);
+  if(/^[1-9]$/.test(e.key)) applyThrow(alleyMapValue(Number(e.key)));
+  if(e.key === '0') applyThrow(alleyMapValue(10));
 });
+
+function buildLifetimeStats(history){
+  const stats = {
+    games: history.length,
+    totalPins: 0,
+    strikes: 0,
+    spares: 0,
+    openFrames: 0,
+    bestGame: 0,
+    perfectGames: 0,
+    avgPerGame: 0,
+    playerAverages: {}
+  };
+  const playerBuckets = {};
+
+  history.forEach(match => {
+    let matchTop = 0;
+    (match.players || []).forEach(player => {
+      const name = player.name || 'Unknown';
+      const total = Number(player.total || 0);
+      stats.totalPins += total;
+      matchTop = Math.max(matchTop, total);
+      stats.strikes += Number(player.strikes || 0);
+      stats.spares += Number(player.spares || 0);
+      stats.openFrames += Number(player.openFrames || 0);
+      if(total >= 200) stats.perfectGames += 1;
+      if(!playerBuckets[name]) playerBuckets[name] = [];
+      playerBuckets[name].push(total);
+    });
+    stats.bestGame = Math.max(stats.bestGame, matchTop);
+  });
+
+  const allGameScores = history.flatMap(match => (match.players || []).map(p => Number(p.total || 0)));
+  stats.avgPerGame = average(allGameScores);
+
+  Object.entries(playerBuckets).forEach(([name, scores]) => {
+    stats.playerAverages[name] = average(scores);
+  });
+
+  return stats;
+}
+
+function renderStats(){
+  const stats = buildLifetimeStats(matchHistory);
+  const items = [
+    ['Games', stats.games],
+    ['Total Pins', stats.totalPins],
+    ['Avg / Game', stats.avgPerGame.toFixed(1)],
+    ['Best Game', stats.bestGame],
+    ['Strikes', stats.strikes],
+    ['Spares', stats.spares],
+    ['Open Frames', stats.openFrames],
+    ['Perfect Games', stats.perfectGames]
+  ];
+
+  els.statsGrid.innerHTML = items.map(([label,val]) => `
+    <div class="statBox">
+      <div class="statLabel">${escapeHtml(label)}</div>
+      <div class="statValue">${escapeHtml(String(val))}</div>
+    </div>
+  `).join('');
+
+  const playerAvgs = Object.entries(stats.playerAverages).sort((a,b)=>b[1]-a[1]);
+  els.playerAvgGrid.innerHTML = playerAvgs.length
+    ? playerAvgs.map(([name, avg]) => `
+        <div class="statBox">
+          <div class="statLabel">${escapeHtml(name)} Average</div>
+          <div class="statValue">${avg.toFixed(1)}</div>
+        </div>
+      `).join('')
+    : `<div class="muted">No player averages yet.</div>`;
+}
+
+function renderHistory(){
+  if(matchHistory.length === 0){
+    els.historyList.innerHTML = `<div class="muted">No completed matches saved yet.</div>`;
+    return;
+  }
+  const recent = [...matchHistory].slice(-10).reverse();
+  els.historyList.innerHTML = recent.map(m => {
+    const winner = m.winner || 'N/A';
+    const topScore = m.players?.reduce((mx,p)=>Math.max(mx, p.total || 0), 0) || 0;
+    const when = m.date || m.matchId || '';
+    return `
+      <div class="historyItem">
+        <div class="historyTitle">
+          <span>${escapeHtml(when)}</span>
+          <span>Winner: ${escapeHtml(winner)}</span>
+        </div>
+        <div class="historyMeta">
+          Players: ${escapeHtml(String(m.players?.length || 0))} • Top score: ${escapeHtml(String(topScore))}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function finalizeMatch(){
+  const finishedPlayers = players.map(p => {
+    const total = p.total;
+    const strikes = p.frames.filter(f => f.d1 === 'Double' || f.d2 === 'Double').length;
+    const spares = p.frames.filter(f => {
+      const openOrStrike = f.d1 === 'Double' || f.d2 === 'Double';
+      const frameScore = f.total || 0;
+      return !openOrStrike && frameScore > 0 && frameScore % 10 === 0;
+    }).length;
+    const openFrames = p.frames.filter(f => {
+      const openOrStrike = f.d1 === 'Double' || f.d2 === 'Double';
+      return !openOrStrike && (f.total || 0) > 0;
+    }).length;
+
+    return {
+      name: p.name,
+      total,
+      strikes,
+      spares,
+      openFrames,
+      frames: p.frames.map((f, idx) => ({
+        frame: idx + 1,
+        alley: f.alley,
+        d1: f.d1,
+        d2: f.d2,
+        d3: f.d3,
+        score: f.total
+      }))
+    };
+  });
+
+  matchHistory.push({
+    matchId: new Date().toISOString(),
+    date: new Date().toLocaleString(),
+    winner: winnerName(),
+    players: finishedPlayers
+  });
+  saveHistory();
+  renderStats();
+  renderHistory();
+}
+
+function clearHistory(){
+  matchHistory = [];
+  saveHistory();
+  renderStats();
+  renderHistory();
+  setMessage('History cleared.');
+}
 
 els.addPlayerBtn.onclick = addPlayer;
 els.startGameBtn.onclick = startGame;
 els.resetBtn.onclick = resetAll;
+els.clearHistoryBtn.onclick = clearHistory;
 els.missBtn.onclick = () => applyThrow('Miss');
 els.tripleBtn.onclick = () => applyThrow('Triple');
 els.outerBtn.onclick = () => applyThrow('Outer Single');
@@ -336,6 +550,8 @@ els.innerBtn.onclick = () => applyThrow('Inner Single');
 els.playerName.addEventListener('keydown', e => { if(e.key === 'Enter') addPlayer(); });
 
 makeKeypad();
+renderStats();
+renderHistory();
 updateUI();
 </script>
 </body>
