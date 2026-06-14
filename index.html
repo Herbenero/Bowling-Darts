@@ -60,7 +60,7 @@
     <div class="top">
       <div class="card">
         <h1>Bowling Darts</h1>
-        <p class="muted">First dart selects the alley. Darts 2 and 3 score the selected alley. Double on dart 1 or 2 ends the frame unless it is the 10th frame.</p>
+        <p class="muted">First dart selects the alley. Darts 2 and 3 score the selected alley. Double on dart 1 or 2 ends the frame unless it is the 10th frame. Double on dart 3 is not a strike.</p>
         <div class="row">
           <input id="playerName" placeholder="Player name" />
           <button class="primary" id="addPlayerBtn">Add Player</button>
@@ -77,6 +77,7 @@
           <div><span class="pill">Dart 2</span> Score points on the selected alley.</div>
           <div><span class="pill">Dart 3</span> Complete the frame, or spare/bonus if eligible.</div>
           <div><span class="pill">Strike</span> Double on dart 1 or dart 2 ends the frame unless it is the 10th frame.</div>
+          <div><span class="pill">Dart 3</span> Double on dart 3 does NOT count as a strike.</div>
           <div><span class="pill">Symbols</span> Strike = X, Spare = /, Open = -.</div>
         </div>
         <div class="keypad" id="keypad"></div>
@@ -281,6 +282,7 @@ function applyThrow(segment){
     f.alley = segment;
     f.d1 = segment;
 
+    // Double on dart 1 = strike (only if not 10th frame)
     if(segment === 'Double' && frameIndex < 9){
       f.total = 10;
       p.total += 10;
@@ -300,7 +302,8 @@ function applyThrow(segment){
     f.d2 = segment;
     f.p2 = scoreForDart(f, segment, 2);
 
-    if(segment === 'Double' && frameIndex < 9){
+    // Double on dart 2 = strike (only if not 10th frame, and NOT on dart 3)
+    if(segment === 'Double' && frameIndex < 9 && dart !== 3){
       f.total = 10;
       p.total += 10;
       f.locked = true;
@@ -318,6 +321,8 @@ function applyThrow(segment){
   if(dart === 3){
     f.d3 = segment;
     f.p3 = scoreForDart(f, segment, 3);
+
+    // Double on dart 3 is NOT a strike: just score points normally
     const frameScore = calculateFrameScore(f);
     f.total = frameScore;
     p.total += frameScore;
@@ -406,153 +411,4 @@ function buildLifetimeStats(history){
   };
   const playerBuckets = {};
 
-  history.forEach(match => {
-    let matchTop = 0;
-    (match.players || []).forEach(player => {
-      const name = player.name || 'Unknown';
-      const total = Number(player.total || 0);
-      stats.totalPins += total;
-      matchTop = Math.max(matchTop, total);
-      stats.strikes += Number(player.strikes || 0);
-      stats.spares += Number(player.spares || 0);
-      stats.openFrames += Number(player.openFrames || 0);
-      if(total >= 200) stats.perfectGames += 1;
-      if(!playerBuckets[name]) playerBuckets[name] = [];
-      playerBuckets[name].push(total);
-    });
-    stats.bestGame = Math.max(stats.bestGame, matchTop);
-  });
-
-  const allGameScores = history.flatMap(match => (match.players || []).map(p => Number(p.total || 0)));
-  stats.avgPerGame = average(allGameScores);
-
-  Object.entries(playerBuckets).forEach(([name, scores]) => {
-    stats.playerAverages[name] = average(scores);
-  });
-
-  return stats;
-}
-
-function renderStats(){
-  const stats = buildLifetimeStats(matchHistory);
-  const items = [
-    ['Games', stats.games],
-    ['Total Pins', stats.totalPins],
-    ['Avg / Game', stats.avgPerGame.toFixed(1)],
-    ['Best Game', stats.bestGame],
-    ['Strikes', stats.strikes],
-    ['Spares', stats.spares],
-    ['Open Frames', stats.openFrames],
-    ['Perfect Games', stats.perfectGames]
-  ];
-
-  els.statsGrid.innerHTML = items.map(([label,val]) => `
-    <div class="statBox">
-      <div class="statLabel">${escapeHtml(label)}</div>
-      <div class="statValue">${escapeHtml(String(val))}</div>
-    </div>
-  `).join('');
-
-  const playerAvgs = Object.entries(stats.playerAverages).sort((a,b)=>b[1]-a[1]);
-  els.playerAvgGrid.innerHTML = playerAvgs.length
-    ? playerAvgs.map(([name, avg]) => `
-        <div class="statBox">
-          <div class="statLabel">${escapeHtml(name)} Average</div>
-          <div class="statValue">${avg.toFixed(1)}</div>
-        </div>
-      `).join('')
-    : `<div class="muted">No player averages yet.</div>`;
-}
-
-function renderHistory(){
-  if(matchHistory.length === 0){
-    els.historyList.innerHTML = `<div class="muted">No completed matches saved yet.</div>`;
-    return;
-  }
-  const recent = [...matchHistory].slice(-10).reverse();
-  els.historyList.innerHTML = recent.map(m => {
-    const winner = m.winner || 'N/A';
-    const topScore = m.players?.reduce((mx,p)=>Math.max(mx, p.total || 0), 0) || 0;
-    const when = m.date || m.matchId || '';
-    return `
-      <div class="historyItem">
-        <div class="historyTitle">
-          <span>${escapeHtml(when)}</span>
-          <span>Winner: ${escapeHtml(winner)}</span>
-        </div>
-        <div class="historyMeta">
-          Players: ${escapeHtml(String(m.players?.length || 0))} • Top score: ${escapeHtml(String(topScore))}
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function finalizeMatch(){
-  const finishedPlayers = players.map(p => {
-    const total = p.total;
-    const strikes = p.frames.filter(f => f.d1 === 'Double' || f.d2 === 'Double').length;
-    const spares = p.frames.filter(f => {
-      const openOrStrike = f.d1 === 'Double' || f.d2 === 'Double';
-      const frameScore = f.total || 0;
-      return !openOrStrike && frameScore > 0 && frameScore % 10 === 0;
-    }).length;
-    const openFrames = p.frames.filter(f => {
-      const openOrStrike = f.d1 === 'Double' || f.d2 === 'Double';
-      return !openOrStrike && (f.total || 0) > 0;
-    }).length;
-
-    return {
-      name: p.name,
-      total,
-      strikes,
-      spares,
-      openFrames,
-      frames: p.frames.map((f, idx) => ({
-        frame: idx + 1,
-        alley: f.alley,
-        d1: f.d1,
-        d2: f.d2,
-        d3: f.d3,
-        score: f.total
-      }))
-    };
-  });
-
-  matchHistory.push({
-    matchId: new Date().toISOString(),
-    date: new Date().toLocaleString(),
-    winner: winnerName(),
-    players: finishedPlayers
-  });
-  saveHistory();
-  renderStats();
-  renderHistory();
-}
-
-function clearHistory(){
-  matchHistory = [];
-  saveHistory();
-  renderStats();
-  renderHistory();
-  setMessage('History cleared.');
-}
-
-els.addPlayerBtn.onclick = addPlayer;
-els.startGameBtn.onclick = startGame;
-els.resetBtn.onclick = resetAll;
-els.clearHistoryBtn.onclick = clearHistory;
-els.missBtn.onclick = () => applyThrow('Miss');
-els.tripleBtn.onclick = () => applyThrow('Triple');
-els.outerBtn.onclick = () => applyThrow('Outer Single');
-els.doubleBtn.onclick = () => applyThrow('Double');
-els.innerBtn.onclick = () => applyThrow('Inner Single');
-els.playerName.addEventListener('keydown', e => { if(e.key === 'Enter') addPlayer(); });
-
-makeKeypad();
-renderStats();
-renderHistory();
-updateUI();
-</script>
-</body>
-</html>
+  history.forEach(match => 
