@@ -31,7 +31,9 @@
     .throws{display:flex;justify-content:center;gap:6px;font-size:15px}
     .throw{min-width:20px}
     .activeRow{outline:2px solid var(--accent);outline-offset:-2px}
-    @media (max-width:900px){.top{grid-template-columns:1fr}}
+    .keypad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+    .keypad button{padding:10px 0;font-weight:700}
+    @media (max-width:900px){.top{grid-template-columns:1fr}.keypad{grid-template-columns:repeat(4,1fr)}}
   </style>
 </head>
 <body>
@@ -51,15 +53,13 @@
       <div class="card">
         <h2>Rules</h2>
         <div class="legend">
-          <div><span class="pill">Dart 1</span> Choose alley: Miss, Triple, Outer Single, Double, Inner Single.</div>
+          <div><span class="pill">Dart 1</span> Choose alley: 1-20, or buttons.</div>
           <div><span class="pill">Dart 2</span> Score points on the selected alley.</div>
           <div><span class="pill">Dart 3</span> Complete the frame, or spare/bonus if eligible.</div>
-          <div><span class="pill">Double</span> Strike = 10 pins.</div>
-          <div><span class="pill">Triple</span> 9 pins, or 20 if hit twice in the frame.</div>
-          <div><span class="pill">Outer Single</span> 3 pins, or 10 if hit twice in the frame.</div>
-          <div><span class="pill">Inner Single</span> 7 pins, or 14 if hit twice in the frame.</div>
-          <div><span class="pill">Miss</span> Counts as 0.</div>
+          <div><span class="pill">Strike</span> Double on dart 2 ends the frame unless it is the 10th frame.</div>
+          <div><span class="pill">Symbols</span> Strike = X, Spare = /, Open = -.</div>
         </div>
+        <div class="keypad" id="keypad"></div>
       </div>
     </div>
 
@@ -88,6 +88,13 @@
 
 <script>
 const points = { 'Miss':0, 'Triple':9, 'Outer Single':3, 'Double':10, 'Inner Single':7 };
+const alleyMap = {
+  1:'Miss',2:'Triple',3:'Outer Single',4:'Double',5:'Inner Single',
+  6:'Miss',7:'Triple',8:'Outer Single',9:'Double',10:'Inner Single',
+  11:'Miss',12:'Triple',13:'Outer Single',14:'Double',15:'Inner Single',
+  16:'Miss',17:'Triple',18:'Outer Single',19:'Double',20:'Inner Single'
+};
+
 let players = [];
 let started = false;
 let gameOver = false;
@@ -109,11 +116,12 @@ const els = {
   scoreboard: document.getElementById('scoreboard'),
   status: document.getElementById('status'),
   substatus: document.getElementById('substatus'),
-  message: document.getElementById('message')
+  message: document.getElementById('message'),
+  keypad: document.getElementById('keypad')
 };
 
 function emptyFrame(){
-  return { alley:null, d1:null, d2:null, d3:null, p1:0, p2:0, p3:0, total:0, locked:false };
+  return { alley:null, d1:null, d2:null, d3:null, p1:0, p2:0, p3:0, total:0, locked:false, result:'' };
 }
 function newPlayer(name){
   return { name, frames:Array.from({length:10}, emptyFrame), total:0, finished:false };
@@ -132,15 +140,29 @@ function escapeHtml(s){
 function updatePlayersList(){
   els.playersList.innerHTML = players.map((p,i)=>`<span class="pill">${i+1}. ${escapeHtml(p.name)}</span>`).join('');
 }
+function symbolForFrame(f){
+  if(f.alley === 'Double' && f.d2 === 'Double') return 'X';
+  if(f.alley === 'Triple' && f.p2 + f.p3 === 10) return '/';
+  if((f.alley === 'Outer Single' || f.alley === 'Inner Single') && f.p2 + f.p3 === 10) return '/';
+  return f.total > 0 ? '' : '-';
+}
 function frameDisplay(f){
   const alley = f.alley ? f.alley : '-';
-  const t1 = f.d1 ?? '';
-  const t2 = f.d2 ?? '';
-  const t3 = f.d3 ?? '';
+  const t1 = displayThrow(f.d1);
+  const t2 = displayThrow(f.d2);
+  const t3 = displayThrow(f.d3);
+  const mark = symbolForFrame(f);
   return `
-    <div class="frameTop"><span>${alley}</span><span>${f.total || ''}</span></div>
+    <div class="frameTop"><span>${alley}</span><span>${mark}</span></div>
     <div class="throws"><span class="throw">${t1}</span><span class="throw">${t2}</span><span class="throw">${t3}</span></div>
   `;
+}
+function displayThrow(value){
+  if(value === null || value === undefined) return '';
+  if(value === 'Miss') return '-';
+  if(value === 'Double') return 'X';
+  if(value === 'Spare') return '/';
+  return '';
 }
 function renderBoard(){
   const header = `<tr><th>Player</th>${Array.from({length:10},(_,i)=>`<th>F${i+1}</th>`).join('')}<th>Total</th></tr>`;
@@ -217,7 +239,9 @@ function applyThrow(segment){
     f.p2 = scoreForDart(f, segment, 2);
     setMessage(`${p.name} dart 2: ${segment} (${f.p2} pins).`);
 
-    if(f.alley === 'Double' && segment === 'Double'){
+    if(f.alley === 'Double' && segment === 'Double' && frameIndex < 9){
+      f.d3 = null;
+      f.p3 = 0;
       f.total = 10;
       p.total += 10;
       f.locked = true;
@@ -257,22 +281,23 @@ function calculateFrameScore(f){
   const p2 = f.p2 || 0;
   const p3 = f.p3 || 0;
 
-  if(a === 'Double' && p2 === 10) return 10;
+  if(a === 'Double' && f.d2 === 'Double') return 10;
 
   if(a === 'Triple'){
     if(p2 === 9 && p3 === 9) return 20;
-    if(p2 === 9 && p3 === 0) return 9;
-    if(p2 === 0 && p3 === 9) return 9;
+    if(p2 + p3 >= 10) return 15;
     return p2 + p3;
   }
 
   if(a === 'Outer Single'){
     if(p2 === 3 && p3 === 3) return 10;
+    if(p2 + p3 >= 10) return 15;
     return p2 + p3;
   }
 
   if(a === 'Inner Single'){
     if(p2 === 7 && p3 === 7) return 14;
+    if(p2 + p3 >= 10) return 15;
     return p2 + p3;
   }
 
@@ -291,6 +316,23 @@ function advanceTurn(){
   }
   updateUI();
 }
+function makeKeypad(){
+  els.keypad.innerHTML = '';
+  for(let i=1;i<=20;i++){
+    const b = document.createElement('button');
+    b.textContent = i;
+    b.onclick = () => {
+      if(!started || gameOver || dart !== 1) return;
+      applyThrow(alleyMap[i]);
+    };
+    els.keypad.appendChild(b);
+  }
+}
+document.addEventListener('keydown', e => {
+  if(!started || gameOver || dart !== 1) return;
+  if(/^[1-9]$/.test(e.key)) applyThrow(alleyMap[Number(e.key)]);
+  if(e.key === '0') applyThrow(alleyMap[10]);
+});
 
 els.addPlayerBtn.onclick = addPlayer;
 els.startGameBtn.onclick = startGame;
@@ -302,6 +344,7 @@ els.doubleBtn.onclick = () => applyThrow('Double');
 els.innerBtn.onclick = () => applyThrow('Inner Single');
 els.playerName.addEventListener('keydown', e => { if(e.key === 'Enter') addPlayer(); });
 
+makeKeypad();
 updateUI();
 </script>
 </body>
