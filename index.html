@@ -1,801 +1,908 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Bowling Darts — Multiplayer</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bowling Darts - Enhanced</title>
 <style>
-  :root{
-    --bg:#07101a; --panel:#0b1520; --muted:#94a3b8; --text:#e6eef6;
-    --accent:#22c55e; --accent2:#38bdf8; --warn:#ef4444; --gold:#f1c15d;
-    --line:#22303b; --radius:12px;
+  :root {
+    --bg: #0a0f19;
+    --panel: #121a24;
+    --text: #e0e6f0;
+    --muted: #7a8ba6;
+    --accent: #00d1ff;
+    --warn: #ff6b6b;
+    --radius: 14px;
   }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#04101a,#07101a);color:var(--text);min-height:100vh;padding:20px}
-  .wrap{max-width:1200px;margin:0 auto;display:grid;gap:16px}
-  header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-  h1{margin:0;font-size:1.6rem}
-  .panel{background:rgba(255,255,255,.03);border:1px solid var(--line);padding:14px;border-radius:12px}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  input,select,button{border-radius:10px;border:1px solid var(--line);background:#071922;color:var(--text);padding:10px 12px}
-  button{cursor:pointer}
-  .btn-primary{background:linear-gradient(135deg,var(--accent),#5adf84);color:#052e16;font-weight:800;border:none}
-  .btn-alt{background:linear-gradient(135deg,var(--accent2),#7fd6ff);color:#042e3a;border:none;font-weight:800}
-  .btn-warn{background:linear-gradient(135deg,var(--warn),#ff7f7f);color:white;border:none;font-weight:800}
-  .setup-grid{display:grid;grid-template-columns:1fr auto;gap:12px}
-  .players{display:grid;gap:8px;margin-top:8px}
-  .player-row{display:flex;gap:8px}
-  .player-row input{flex:1}
-  .game-grid{display:grid;grid-template-columns:1fr 420px;gap:16px}
-  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-  .meta .card{background:rgba(0,0,0,.12);padding:10px;border-radius:8px;min-width:120px;text-align:center}
-  .controls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
-  .control-btn{padding:12px;border-radius:10px;background:rgba(255,255,255,.02);font-weight:700}
-  .keys{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
-  .key{padding:12px;border-radius:10px;background:rgba(255,255,255,.02);font-weight:800;text-align:center;cursor:pointer}
-  .key.disabled{opacity:.45;pointer-events:none}
-  .announce{margin-top:12px;padding:12px;border-radius:10px;background:rgba(255,255,255,.02)}
-  .table-wrap{overflow:auto;margin-top:12px}
-  table{width:100%;border-collapse:collapse;min-width:820px}
-  th,td{padding:8px;border:1px solid var(--line);text-align:center}
-  th{background:rgba(255,255,255,.02);color:var(--muted);font-size:.85rem}
-  td.name{text-align:left;font-weight:800}
-  td.total{font-weight:900;color:var(--gold)}
-  .active-row{outline:2px solid rgba(34,197,94,.18);background:rgba(34,197,94,.03)}
-  .hidden{display:none}
-  @media (max-width:980px){ .game-grid{grid-template-columns:1fr} .keys{grid-template-columns:repeat(4,1fr)} .controls{grid-template-columns:repeat(3,1fr)} }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  h1 {
+    margin: 0;
+    font-weight: 700;
+  }
+  .btn {
+    background: transparent;
+    border: 1px solid var(--muted);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+  }
+  .btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover {
+    background: #00b0e6;
+    border-color: #00b0e6;
+  }
+  .btn-warn {
+    background: var(--warn);
+    border-color: var(--warn);
+    color: #000;
+  }
+  .btn-warn:hover {
+    background: #e04e4e;
+    border-color: #e04e4e;
+  }
+  .setup, .game {
+    background: var(--panel);
+    padding: 20px;
+    border-radius: var(--radius);
+  }
+  .players-list {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .players-list input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--muted);
+    background: transparent;
+    color: var(--text);
+  }
+  .players-list button {
+    flex-shrink: 0;
+  }
+  .meta {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+  }
+  .meta div {
+    flex: 1;
+    background: rgba(255 255 255 / 0.05);
+    padding: 10px;
+    border-radius: var(--radius);
+    text-align: center;
+  }
+  .meta div span {
+    display: block;
+  }
+  .meta .label {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+  }
+  .meta .value {
+    font-weight: 700;
+    font-size: 1.3rem;
+  }
+  .controls {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+  }
+  .shot-buttons {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .shot-button {
+    background: rgba(0, 209, 255, 0.15);
+    border: 1px solid rgba(0, 209, 255, 0.3);
+    border-radius: var(--radius);
+    padding: 15px 0;
+    font-weight: 700;
+    color: var(--accent);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+  .shot-button:hover:not(:disabled) {
+    background: var(--accent);
+    color: #000;
+  }
+  .shot-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .keypad {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .key {
+    background: #001f2f;
+    border: 1px solid #00d1ff;
+    border-radius: var(--radius);
+    padding: 15px 0;
+    font-weight: 700;
+    color: #00d1ff;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+  .key.bull {
+    background: #4a3e00;
+    border-color: #ffd166;
+    color: #ffd166;
+  }
+  .key:hover:not(.disabled) {
+    background: #00d1ff;
+    color: #000;
+  }
+  .key.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 8px;
+    text-align: center;
+    color: var(--text);
+  }
+  th {
+    background: rgba(0, 209, 255, 0.1);
+    font-weight: 700;
+  }
+  td.name {
+    text-align: left;
+    font-weight: 700;
+  }
+  td.total {
+    font-weight: 900;
+    color: var(--gold);
+  }
+  .frame-cell {
+    min-width: 90px;
+  }
+  .frame-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .throws {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 700;
+  }
+  .throw {
+    min-width: 20px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    background: rgba(0, 209, 255, 0.1);
+  }
+  .active-row {
+    outline: 2px solid rgba(0, 209, 255, 0.3);
+    background: rgba(0, 209, 255, 0.1);
+  }
+  .announce {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: var(--radius);
+    background: rgba(0, 209, 255, 0.05);
+    font-weight: 700;
+  }
+  .export-import {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+  }
+  input[type="file"] {
+    display: none;
+  }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="panel">
-      <div>
-        <h1>Bowling Darts</h1>
-        <div style="color:var(--muted);margin-top:6px">First dart selects alley. Darts 2 & 3 score selected alley. Frame totals capped to 10.</div>
-      </div>
-      <div class="row">
-        <button id="showHistory" class="control-btn">History</button>
-        <button id="showLeaderboard" class="control-btn">Leaderboard</button>
+  <div class="container">
+    <header>
+      <h1>Bowling Darts</h1>
+      <p class="lead">Select alley with dart 1, score with darts 2 & 3. Frame totals capped at 10.</p>
+      <div class="export-import">
+        <button id="exportHistoryBtn" class="btn">Export History</button>
+        <button id="importHistoryBtn" class="btn">Import History</button>
+        <input type="file" id="importFile" accept="application/json" />
       </div>
     </header>
 
-    <section class="panel setup-grid">
-      <div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><strong>Players</strong></div>
-          <div class="row">
-            <button id="addPlayer" class="btn-alt">Add Player</button>
-            <button id="removePlayer" class="control-btn">Remove</button>
-          </div>
+    <section class="setup panel">
+      <div class="players-list" id="playersList">
+        <div class="player-row">
+          <input type="text" value="Player 1" />
         </div>
-
-        <div class="players" id="playersList"></div>
-
-        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
-          <label style="color:var(--muted)">Match Date</label>
-          <input id="matchDate" type="date">
-          <button id="startGame" class="btn-primary">Start Game</button>
+        <div class="player-row">
+          <input type="text" value="Player 2" />
         </div>
       </div>
-
-      <div style="padding-left:12px">
-        <div style="font-weight:800">Rules</div>
-        <ul style="color:var(--muted);margin-top:8px">
-          <li>First dart chooses alley (1–20)</li>
-          <li>Darts 2 & 3 score that alley</li>
-          <li>Double on dart1 or dart2 = strike (10) ends frame (not on 10th frame)</li>
-          <li>Double on dart3 is not a strike</li>
-          <li>Frame totals are capped at 10</li>
-        </ul>
+      <div class="row" style="margin-top:10px;">
+        <button id="addPlayerBtn" class="btn">Add Player</button>
+        <button id="removePlayerBtn" class="btn">Remove Player</button>
+        <button id="startBtn" class="btn-primary" style="margin-left:auto;">Start Game</button>
       </div>
     </section>
 
-    <section class="game-grid">
-      <div class="panel" id="gamePanel">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">Game</div>
-          <div style="color:var(--muted)"><span id="statusText">Add players & start</span></div>
-        </div>
-
-        <div class="meta">
-          <div class="card"><div style="color:var(--muted)">Current</div><div id="currentPlayer" style="font-weight:900">—</div></div>
-          <div class="card"><div style="color:var(--muted)">Frame</div><div id="frameLabel" style="font-weight:900">—</div></div>
-          <div class="card"><div style="color:var(--muted)">Dart</div><div id="dartLabel" style="font-weight:900">—</div></div>
-          <div class="card"><div style="color:var(--muted)">Mode</div><div id="modeLabel" style="font-weight:900">—</div></div>
-          <div class="card"><div style="color:var(--muted)">Alley</div><div id="alleyLabel" style="font-weight:900">—</div></div>
-        </div>
-
-        <div class="controls" id="shotButtons">
-          <button class="control-btn" data-shot="Miss">Miss</button>
-          <button class="control-btn" data-shot="Outer Single">Outer</button>
-          <button class="control-btn" data-shot="Inner Single">Inner</button>
-          <button class="control-btn" data-shot="Triple">Triple</button>
-          <button class="control-btn" data-shot="Double">Double</button>
-        </div>
-
-        <div class="keys" id="keypad"></div>
-
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button id="undo" class="control-btn">Undo</button>
-          <button id="endTurn" class="btn-alt">End Turn</button>
-          <button id="reset" class="btn-warn">New Game</button>
-        </div>
-
-        <div class="announce" id="message" style="margin-top:12px">Add players and start the game.</div>
+    <section class="game panel" style="display:none;">
+      <div class="meta">
+        <div class="card"><span class="label">Current Player</span><span id="currentPlayer" class="value">—</span></div>
+        <div class="card"><span class="label">Frame</span><span id="frameLabel" class="value">—</span></div>
+        <div class="card"><span class="label">Dart</span><span id="dartLabel" class="value">—</span></div>
+        <div class="card"><span class="label">Mode</span><span id="modeLabel" class="value">Bowling Darts</span></div>
+        <div class="card"><span class="label">Alley</span><span id="alleyLabel" class="value">—</span></div>
       </div>
 
-      <aside class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:end">
-          <div><strong>Scoreboard</strong><div style="color:var(--muted)">10 frames</div></div>
-          <div></div>
-        </div>
+      <div class="shot-buttons" id="shotButtons">
+        <button class="shot-button" data-shot="Miss">Miss</button>
+        <button class="shot-button" data-shot="Outer Single">Outer</button>
+        <button class="shot-button" data-shot="Inner Single">Inner</button>
+        <button class="shot-button" data-shot="Triple">Triple</button>
+        <button class="shot-button" data-shot="Double">Double</button>
+      </div>
 
-        <div class="table-wrap">
-          <table id="scoreboard">
-            <thead></thead>
-            <tbody></tbody>
-          </table>
-        </div>
+      <div class="keypad" id="keypad"></div>
 
-        <div style="margin-top:12px">
-          <strong>History</strong>
-          <div id="history" style="color:var(--muted);margin-top:8px">No matches yet.</div>
-        </div>
+      <div class="controls" style="margin-top:15px;">
+        <button id="undoBtn" class="btn">Undo</button>
+        <button id="endTurnBtn" class="btn-primary">End Turn</button>
+        <button id="newGameBtn" class="btn-warn">New Game</button>
+      </div>
 
-        <div style="margin-top:12px">
-          <strong>Leaderboard</strong>
-          <div id="leaderboard" style="color:var(--muted);margin-top:8px">No data</div>
-        </div>
-      </aside>
+      <div class="announce" id="announcement">Enter player names and start the game.</div>
+    </section>
+
+    <section class="panel" style="margin-top:20px;">
+      <h2>Scoreboard</h2>
+      <div class="table-wrap">
+        <table>
+          <thead id="scoreHead"></thead>
+          <tbody id="scoreBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:20px;">
+      <h2>Match History</h2>
+      <div id="historyList" style="color: var(--muted); max-height: 300px; overflow-y: auto;"></div>
+    </section>
+
+    <section class="panel" style="margin-top:20px;">
+      <h2>Leaderboard</h2>
+      <div id="leaderList" style="color: var(--muted); max-height: 300px; overflow-y: auto;"></div>
     </section>
   </div>
 
 <script>
-/* Bowling Darts — multiplayer, capped scores, local history + leaderboard w/ ELO */
+  const STORAGE_HISTORY = 'bowlingDarts_history_v2';
+  const STORAGE_LEADER = 'bowlingDarts_leader_v2';
 
-const STORAGE_KEY_HISTORY = 'bowlingDarts_history_v1';
-const STORAGE_KEY_LEADER = 'bowlingDarts_leader_v1';
-
-// alley mapping cycle 1..20 -> segment type
-const alleyMap = {
-  1:'Miss',2:'Triple',3:'Outer Single',4:'Double',5:'Inner Single',
-  6:'Miss',7:'Triple',8:'Outer Single',9:'Double',10:'Inner Single',
-  11:'Miss',12:'Triple',13:'Outer Single',14:'Double',15:'Inner Single',
-  16:'Miss',17:'Triple',18:'Outer Single',19:'Double',20:'Inner Single'
-};
-
-const points = { 'Miss':0, 'Triple':9, 'Outer Single':3, 'Double':10, 'Inner Single':7 };
-
-let players = []; // array of player objects
-let started = false;
-let gameOver = false;
-let currentPlayer = 0;
-let frameIndex = 0; // 0..9
-let dart = 1; // 1..3
-let historyStack = [];
-
-const els = {
-  playersList: document.getElementById('playersList'),
-  addPlayer: document.getElementById('addPlayer'),
-  removePlayer: document.getElementById('removePlayer'),
-  startGame: document.getElementById('startGame'),
-  matchDate: document.getElementById('matchDate'),
-  statusText: document.getElementById('statusText'),
-  currentPlayerLabel: document.getElementById('currentPlayer'),
-  frameLabel: document.getElementById('frameLabel'),
-  dartLabel: document.getElementById('dartLabel'),
-  modeLabel: document.getElementById('modeLabel'),
-  alleyLabel: document.getElementById('alleyLabel'),
-  shotButtons: document.getElementById('shotButtons'),
-  keypad: document.getElementById('keypad'),
-  undoBtn: document.getElementById('undo'),
-  endTurnBtn: document.getElementById('endTurn'),
-  resetBtn: document.getElementById('reset'),
-  message: document.getElementById('message'),
-  scoreHead: document.querySelector('#scoreboard thead'),
-  scoreBody: document.querySelector('#scoreboard tbody'),
-  historyDiv: document.getElementById('history'),
-  leaderDiv: document.getElementById('leaderboard'),
-  showHistoryBtn: document.getElementById('showHistory'),
-  showLeaderBtn: document.getElementById('showLeaderboard')
-};
-
-// Player structure: { name, frames:[{alley,d1,d2,d3,p2,p3,total,locked}], total }
-
-function createPlayer(name){
-  return {
-    name,
-    frames: Array.from({length:10}, ()=> ({alley:null,d1:null,d2:null,d3:null,p2:0,p3:0,total:0,locked:false,result:''})),
-    total:0
+  const alleyMap = {
+    1:'Miss',2:'Triple',3:'Outer Single',4:'Double',5:'Inner Single',
+    6:'Miss',7:'Triple',8:'Outer Single',9:'Double',10:'Inner Single',
+    11:'Miss',12:'Triple',13:'Outer Single',14:'Double',15:'Inner Single',
+    16:'Miss',17:'Triple',18:'Outer Single',19:'Double',20:'Inner Single'
   };
-}
+  const pointsMap = { 'Miss':0, 'Triple':9, 'Outer Single':3, 'Double':10, 'Inner Single':7 };
+  const throwSymbol = s => {
+    if (!s) return '';
+    if (s === 'Miss') return '-';
+    if (s === 'Double') return 'X';
+    if (s === 'Triple') return 'T';
+    if (s === 'Outer Single') return 'O';
+    if (s === 'Inner Single') return 'I';
+    return '';
+  };
 
-function renderPlayersInputs(){
-  els.playersList.innerHTML = '';
-  players.forEach((p,i)=>{
-    const row = document.createElement('div');
-    row.className='player-row';
-    row.innerHTML = `<input data-index="${i}" value="${escapeHtml(p.name)}" />`;
-    els.playersList.appendChild(row);
-    const input = row.querySelector('input');
-    input.addEventListener('input', e=>{
-      players[i].name = e.target.value;
-      renderBoard();
-    });
-  });
-  refreshAddRemoveVisibility();
-}
+  let players = [];
+  let totals = [];
+  let frameScores = [];
+  let roundScores = [];
+  let currentPlayer = 0;
+  let frameIndex = 0;
+  let dart = 1;
+  let started = false;
+  let historyStack = [];
 
-function addPlayerField(name='Player'){
-  players.push(createPlayer(name));
-  renderPlayersInputs();
-  renderBoard();
-}
+  const els = {
+    playersList: document.getElementById('playersList'),
+    addPlayerBtn: document.getElementById('addPlayerBtn'),
+    removePlayerBtn: document.getElementById('removePlayerBtn'),
+    startBtn: document.getElementById('startBtn'),
+    shotButtons: document.getElementById('shotButtons'),
+    keypad: document.getElementById('keypad'),
+    undoBtn: document.getElementById('undoBtn'),
+    endTurnBtn: document.getElementById('endTurnBtn'),
+    newGameBtn: document.getElementById('newGameBtn'),
+    announcement: document.getElementById('announcement'),
+    currentPlayerLabel: document.getElementById('currentPlayer'),
+    frameLabel: document.getElementById('frameLabel'),
+    dartLabel: document.getElementById('dartLabel'),
+    modeLabel: document.getElementById('modeLabel'),
+    alleyLabel: document.getElementById('alleyLabel'),
+    scoreHead: document.getElementById('scoreHead'),
+    scoreBody: document.getElementById('scoreBody'),
+    historyList: document.getElementById('historyList'),
+    leaderList: document.getElementById('leaderList'),
+    exportHistoryBtn: document.getElementById('exportHistoryBtn'),
+    importHistoryBtn: document.getElementById('importHistoryBtn'),
+    importFile: document.getElementById('importFile')
+  };
 
-function removePlayerField(){
-  if (players.length <= 2) return;
-  players.pop();
-  renderPlayersInputs();
-  renderBoard();
-}
-
-function refreshAddRemoveVisibility(){
-  // keep at least 2 players
-  const removeBtn = els.removePlayer;
-  removeBtn.disabled = players.length <= 2;
-}
-
-function escapeHtml(s){ return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
-
-// init keypad 1..20
-function buildKeypad(){
-  els.keypad.innerHTML = '';
-  for (let i=1;i<=20;i++){
-    const b = document.createElement('button');
-    b.className = 'key';
-    b.textContent = i;
-    b.addEventListener('click', ()=> {
-      if (!started || gameOver || dart !== 1) return;
-      applyThrow(alleyMap[i], i);
-    });
-    els.keypad.appendChild(b);
+  function saveSnapshot(){
+    historyStack.push(JSON.parse(JSON.stringify({
+      players, totals, frameScores, roundScores, currentPlayer, frameIndex, dart, started
+    })));
+    if(historyStack.length > 200) historyStack.shift();
   }
-}
 
-// UI state updates
-function updateMeta(){
-  if (!started){
-    els.statusText.textContent = 'Add players and start the game.';
-    els.currentPlayerLabel.textContent = '—';
-    els.frameLabel.textContent = '—';
-    els.dartLabel.textContent = '—';
-    els.alleyLabel.textContent = '—';
+  function updateMeta(){
+    els.currentPlayerLabel.textContent = players[currentPlayer] || '—';
+    els.frameLabel.textContent = `${frameIndex + 1} / 10`;
+    els.dartLabel.textContent = `${dart} / 3`;
     els.modeLabel.textContent = 'Bowling Darts';
-    disableShotButtons(true);
-    return;
+    els.alleyLabel.textContent = roundScores[currentPlayer][frameIndex][0] || '—';
+
+    const selecting = dart === 1 && started && !isGameOver();
+    Array.from(els.keypad.children).forEach(k => {
+      k.disabled = !selecting;
+      k.classList.toggle('disabled', !selecting);
+    });
+
+    const enableShots = dart > 1 && started && !isGameOver();
+    Array.from(els.shotButtons.querySelectorAll('button')).forEach(b => {
+      b.disabled = !enableShots;
+      b.style.opacity = enableShots ? 1 : 0.4;
+    });
+
+    els.undoBtn.disabled = historyStack.length === 0;
   }
-  if (gameOver){
-    els.statusText.textContent = 'Game over';
-    els.currentPlayerLabel.textContent = '—';
-    els.frameLabel.textContent = '—';
-    els.dartLabel.textContent = '—';
-    disableShotButtons(true);
-    return;
+
+  function isGameOver(){
+    return frameIndex >= 10;
   }
-  const p = players[currentPlayer];
-  els.statusText.textContent = `${p.name} — Frame ${frameIndex+1}, Dart ${dart}`;
-  els.currentPlayerLabel.textContent = p.name;
-  els.frameLabel.textContent = `${frameIndex+1} / 10`;
-  els.dartLabel.textContent = `${dart} / 3`;
-  const f = p.frames[frameIndex];
-  els.alleyLabel.textContent = f.alley ?? '—';
-  disableShotButtons(false);
-  // keypad only for dart 1
-  const selecting = dart === 1;
-  Array.from(els.keypad.children).forEach(k=> {
-    k.classList.toggle('disabled', !selecting || gameOver || !started);
-    k.disabled = !selecting || gameOver || !started;
-  });
-}
 
-function disableShotButtons(disabled){
-  Array.from(els.shotButtons.querySelectorAll('[data-shot]')).forEach(b=>{
-    b.disabled = disabled;
-    b.style.opacity = disabled ? .45 : 1;
-  });
-}
-
-// core game logic
-function resetGameState(){
-  started = false;
-  gameOver = false;
-  currentPlayer = 0;
-  frameIndex = 0;
-  dart = 1;
-  historyStack = [];
-  players = players.length ? players.map(p => createPlayer(p.name || p)) : [createPlayer('Player 1'), createPlayer('Player 2')];
-  players.forEach(p=>p.total=0);
-  renderPlayersInputs();
-  buildKeypad();
-  renderBoard();
-  updateMeta();
-}
-
-function startGame(){
-  // ensure at least two players and names
-  if (players.length < 2){ setMessage('Add at least two players.'); return; }
-  players.forEach(p=>{
-    if (!p.name || p.name.trim() === '') p.name = 'Player';
-    p.frames = Array.from({length:10}, ()=> ({alley:null,d1:null,d2:null,d3:null,p2:0,p3:0,total:0,locked:false,result:''}));
-    p.total = 0;
-  });
-  started = true;
-  gameOver = false;
-  currentPlayer = 0;
-  frameIndex = 0;
-  dart = 1;
-  historyStack = [];
-  setMessage('Game started. First dart selects the alley.');
-  renderBoard();
-  updateMeta();
-}
-
-function saveSnapshot(){
-  historyStack.push(JSON.parse(JSON.stringify({
-    players, started, gameOver, currentPlayer, frameIndex, dart
-  })));
-  if (historyStack.length > 200) historyStack.shift();
-}
-
-function applyThrow(segment, keypadNumber = null){
-  if (!started || gameOver) return;
-  const p = players[currentPlayer];
-  const f = p.frames[frameIndex];
-  if (dart === 1){
-    // set alley
-    f.alley = segment;
-    f.d1 = segment;
-    // record alley (also store number optionally)
-    f.alleyNumber = keypadNumber ?? null;
-    // Double on dart 1 = strike (unless 10th frame)
-    if (segment === 'Double' && frameIndex < 9){
+  function buildNumberGrid(){
+    els.keypad.innerHTML = '';
+    for(let i=1;i<=20;i++){
+      const btn = document.createElement('button');
+      btn.className = 'key';
+      btn.textContent = i;
+      btn.title = `Select alley ${i}`;
+      btn.addEventListener('click', () => {
+        if(!started || isGameOver() || dart !== 1) return;
+        saveSnapshot();
+        selectAlley(i);
+      });
+      els.keypad.appendChild(btn);
+    }
+    const bull = document.createElement('button');
+    bull.className = 'key bull';
+    bull.textContent = 'Bull';
+    bull.title = 'Bull';
+    bull.addEventListener('click', () => {
+      if(!started || isGameOver() || dart !== 1) return;
       saveSnapshot();
-      f.total = 10;
-      p.total += 10;
-      f.locked = true;
-      f.result = 'X';
-      setMessage(`${p.name} strike on dart 1.`);
-      advanceTurn();
-      return;
-    }
-    setMessage(`${p.name} selected ${segment}.`);
+      selectAlley('Bull');
+    });
+    els.keypad.appendChild(bull);
+  }
+
+  function selectAlley(n){
+    roundScores[currentPlayer][frameIndex][0] = n;
     dart = 2;
+    setAnnouncement(`${players[currentPlayer]} selected alley ${n}. Now throw darts 2 & 3.`);
     updateMeta();
-    renderBoard();
-    return;
   }
 
-  if (dart === 2){
+  function handleShot(shotName){
+    if(!started || isGameOver() || dart === 1) return;
     saveSnapshot();
-    f.d2 = segment;
-    f.p2 = scoreForDart(f, segment, 2);
-    // Double on dart 2 = strike except 10th frame
-    if (segment === 'Double' && frameIndex < 9){
-      f.total = 10;
-      p.total += 10;
-      f.locked = true;
-      f.result = 'X';
-      setMessage(`${p.name} strike on dart 2.`);
-      advanceTurn();
+    roundScores[currentPlayer][frameIndex][dart - 1] = shotName;
+    if(dart === 2){
+      dart = 3;
+      setAnnouncement(`${players[currentPlayer]} threw ${shotName}. Final dart next.`);
+    } else {
+      finalizeFrame();
+    }
+    updateMeta();
+  }
+
+  function finalizeFrame(){
+    const p = players[currentPlayer];
+    const shots = roundScores[currentPlayer][frameIndex];
+    const p2 = SHOT_PINS(shots[1]);
+    const p3 = SHOT_PINS(shots[2]);
+    let total = 0;
+    if(p2 === 10 || p3 === 10) total = 10;
+    else total = p2 + p3;
+    if(total > 10) total = 10;
+    frameScores[currentPlayer][frameIndex] = total;
+    totals[currentPlayer] = frameScores[currentPlayer].reduce((a,b) => a + (b || 0), 0);
+    dart = 1;
+    currentPlayer++;
+    if(currentPlayer >= players.length){
+      currentPlayer = 0;
+      frameIndex++;
+    }
+    if(isGameOver()){
+      started = false;
+      setAnnouncement(`Game over! Winner: ${winnerName()}`, 'good');
+      saveMatch();
+      renderHistory();
+      renderLeaderboard();
+    } else {
+      setAnnouncement(`${players[currentPlayer]} to throw on frame ${frameIndex + 1}.`);
+    }
+    renderScoreboard();
+    updateMeta();
+  }
+
+  function SHOT_PINS(shot){
+    if(!shot) return 0;
+    if(shot === 'Miss') return 0;
+    if(shot === 'Double') return 10;
+    if(shot === 'Triple') return 9;
+    if(shot === 'Inner Single') return 7;
+    if(shot === 'Outer Single') return 3;
+    return 0;
+  }
+
+  function winnerName(){
+    let min = Infinity;
+    let winner = '';
+    for(let i=0;i<players.length;i++){
+      if(totals[i] < min){
+        min = totals[i];
+        winner = players[i];
+      }
+    }
+    return winner;
+  }
+
+  function renderScoreboard(){
+    els.scoreHead.innerHTML = '';
+    els.scoreBody.innerHTML = '';
+    const trHead = document.createElement('tr');
+    trHead.innerHTML = `<th>Player</th>${Array.from({length:10},(_,i)=>`<th>F${i+1}</th>`).join('')}<th>Total</th>`;
+    els.scoreHead.appendChild(trHead);
+    players.forEach((p,i) => {
+      const tr = document.createElement('tr');
+      if(started && !isGameOver() && i === currentPlayer) tr.className = 'active-row';
+      const tdName = document.createElement('td');
+      tdName.className = 'name';
+      tdName.textContent = p;
+      tr.appendChild(tdName);
+      for(let f=0;f<10;f++){
+        const td = document.createElement('td');
+        td.className = 'frame-cell';
+        const shots = roundScores[i][f];
+        if(shots){
+          const alley = shots[0] || '-';
+          const total = frameScores[i][f] || '';
+          const topDiv = document.createElement('div');
+          topDiv.className = 'frame-top';
+          topDiv.innerHTML = `<span>${alley}</span><span>${total}</span>`;
+          const throwsDiv = document.createElement('div');
+          throwsDiv.className = 'throws';
+          for(let d=1;d<=3;d++){
+            const sp = throwSymbol(shots[d] || null);
+            const span = document.createElement('span');
+            span.className = 'throw';
+            span.textContent = sp;
+            throwsDiv.appendChild(span);
+          }
+          td.appendChild(topDiv);
+          td.appendChild(throwsDiv);
+        }
+        tr.appendChild(td);
+      }
+      const tdTotal = document.createElement('td');
+      tdTotal.className = 'total';
+      tdTotal.textContent = totals[i] || 0;
+      tr.appendChild(tdTotal);
+      els.scoreBody.appendChild(tr);
+    });
+  }
+
+  function setAnnouncement(msg, cls=''){
+    els.announcement.textContent = msg;
+    els.announcement.className = cls ? `announce ${cls}` : 'announce';
+  }
+
+  function saveMatch(){
+    const history = loadFrom(STORAGE_HISTORY, []);
+    const leaderboard = loadFrom(STORAGE_LEADER, {});
+    const match = {
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      date: document.getElementById('matchDate').value || (new Date()).toLocaleDateString(),
+      players: players.map((p,i) => ({ name: p, total: totals[i] })),
+      winner: winnerName()
+    };
+    history.unshift(match);
+    saveTo(STORAGE_HISTORY, history);
+
+    players.forEach((p,i) => {
+      if(!leaderboard[p]) leaderboard[p] = { name: p, matches: 0, wins: 0, losses: 0, ties: 0, totalPoints: 0, totalFrames: 0, elo: 1200 };
+      const rec = leaderboard[p];
+      rec.matches++;
+      rec.totalPoints += totals[i];
+      rec.totalFrames += 10;
+    });
+    const winners = players.filter((p,i) => totals[i] === Math.min(...totals));
+    players.forEach((p,i) => {
+      const rec = leaderboard[p];
+      if(winners.length > 1 && winners.includes(p)) rec.ties++;
+      else if(winners.length === 1 && winners[0] === p) rec.wins++;
+      else rec.losses++;
+    });
+
+    // Elo update pairwise
+    applyElo(leaderboard, players.map((p,i) => ({ name: p, total: totals[i] })));
+
+    saveTo(STORAGE_LEADER, leaderboard);
+  }
+
+  function applyElo(leaderboard, playerTotals){
+    const k = 24;
+    playerTotals.forEach(p => { if(!leaderboard[p.name]) leaderboard[p.name] = { name: p.name, matches:0, wins:0, losses:0, ties:0, totalPoints:0, totalFrames:0, elo:1200 }; });
+    for(let i=0;i<playerTotals.length;i++){
+      for(let j=i+1;j<playerTotals.length;j++){
+        const A = leaderboard[playerTotals[i].name], B = leaderboard[playerTotals[j].name];
+        const resA = playerTotals[i].total < playerTotals[j].total ? 1 : playerTotals[i].total === playerTotals[j].total ? 0.5 : 0;
+        const ea = 1 / (1 + Math.pow(10, (B.elo - A.elo) / 400));
+        const eb = 1 / (1 + Math.pow(10, (A.elo - B.elo) / 400));
+        A.elo = Math.round(A.elo + k * (resA - ea));
+        B.elo = Math.round(B.elo + k * ((1 - resA) - eb));
+      }
+    }
+  }
+
+  function renderHistory(){
+    const hist = loadFrom(STORAGE_HISTORY, []);
+    if(!hist.length) {
+      els.historyList.innerHTML = '<div>No match history yet.</div>';
       return;
     }
-    setMessage(`${p.name} dart 2: ${segment} (${f.p2} pins).`);
-    dart = 3;
-    updateMeta();
-    renderBoard();
-    return;
+    els.historyList.innerHTML = hist.slice(0,30).map(m => `
+      <div style="padding:8px; border-bottom:1px solid var(--line);">
+        <strong>${m.date}</strong> — ${m.players.map(p => `${p.name}: ${p.total}`).join(' • ')}<br/>
+        Winner: <strong>${m.winner}</strong>
+      </div>
+    `).join('');
   }
 
-  if (dart === 3){
-    saveSnapshot();
-    f.d3 = segment;
-    f.p3 = scoreForDart(f, segment, 3);
-    // Double on dart3 is NOT a strike - just count points
-    // Calculate frame score: sum p2+p3 (or if a Double on d1/d2 already handled above)
-    let frameScore = calculateFrameScore(f);
-    f.total = frameScore;
-    p.total += frameScore;
-    f.locked = true;
-    f.result = frameScore === 10 ? (f.d2 === 'Double' || f.d3 === 'Double' ? 'X' : ( (f.p2 + f.p3) === 10 ? '/' : '' )) : '';
-    setMessage(`${p.name} frame score: ${frameScore}.`);
-    advanceTurn();
-    return;
-  }
-}
-
-function scoreForDart(frame, segment, dartNum){
-  if (!segment) return 0;
-  if (segment === 'Miss') return 0;
-  if (segment === 'Double') return 10;
-  if (dartNum === 2) return points[segment] || 0;
-  if (dartNum === 3){
-    // if segment equals alley and not Miss -> still score points per mapping
-    return points[segment] || 0;
-  }
-  return 0;
-}
-
-// calculate summed p2+p3 but cap to 10, and treat Double on d1/d2 as strike already handled
-function calculateFrameScore(f){
-  const p2 = f.p2 || 0;
-  const p3 = f.p3 || 0;
-  let total = p2 + p3;
-  if (total > 10) total = 10;
-  return total;
-}
-
-function advanceTurn(){
-  // move to next player/frame
-  currentPlayer += 1;
-  if (currentPlayer >= players.length){
-    currentPlayer = 0;
-    frameIndex += 1;
-  }
-  dart = 1;
-  // if reached frame 10 -> game over
-  if (frameIndex >= 10){
-    gameOver = true;
-    setMessage(`Game over. Winner: ${winnerName()}`);
-    finalizeMatch();
-  }
-  renderBoard();
-  updateMeta();
-}
-
-// winner name top total lowest
-function winnerName(){
-  if (players.length === 0) return 'N/A';
-  const sorted = players.slice().sort((a,b)=> a.total - b.total);
-  return sorted[0].name;
-}
-
-// Undo
-function undo(){
-  if (!historyStack.length) return;
-  const prev = historyStack.pop();
-  players = JSON.parse(JSON.stringify(prev.players));
-  started = prev.started;
-  gameOver = prev.gameOver;
-  currentPlayer = prev.currentPlayer;
-  frameIndex = prev.frameIndex;
-  dart = prev.dart;
-  renderPlayersInputs();
-  renderBoard();
-  updateMeta();
-  setMessage('Last action undone.');
-}
-
-// Render scoreboard
-function renderBoard(){
-  // header
-  const head = document.createElement('tr');
-  head.innerHTML = `<th>Player</th>${Array.from({length:10},(_,i)=>`<th>F${i+1}</th>`).join('')}<th>Total</th>`;
-  els.scoreHead.innerHTML = '';
-  els.scoreHead.appendChild(head);
-
-  // body
-  els.scoreBody.innerHTML = '';
-  players.forEach((p, pi) => {
-    const tr = document.createElement('tr');
-    if (started && !gameOver && pi === currentPlayer) tr.className = 'active-row';
-    const nameTd = document.createElement('td'); nameTd.className='name'; nameTd.textContent = p.name;
-    tr.appendChild(nameTd);
-    for (let f=0; f<10; f++){
-      const td = document.createElement('td');
-      const val = p.frames[f].total;
-      td.textContent = val || '';
-      if (f === frameIndex && pi === currentPlayer && started && !gameOver) td.className = 'hole-cell current';
-      tr.appendChild(td);
+  function renderLeaderboard(){
+    const lb = loadFrom(STORAGE_LEADER, {});
+    const rows = Object.values(lb).map(r => {
+      return {
+        ...r,
+        avgRound: r.totalFrames ? (r.totalPoints / r.totalFrames) : 0,
+        winPct: r.matches ? (r.wins / r.matches) * 100 : 0
+      };
+    }).sort((a,b) => b.elo - a.elo || b.wins - a.wins);
+    if(!rows.length){
+      els.leaderList.innerHTML = '<div>No leaderboard data yet.</div>';
+      return;
     }
-    const totalTd = document.createElement('td'); totalTd.className='total'; totalTd.textContent = p.total;
-    tr.appendChild(totalTd);
-    els.scoreBody.appendChild(tr);
+    els.leaderList.innerHTML = rows.map((r,i) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--line);">
+        <div><strong>#${i+1} ${r.name}</strong><br/><small>${r.matches} matches</small></div>
+        <div style="text-align:center;">
+          <div><strong>${r.elo}</strong></div>
+          <div style="font-size:0.8rem;color:var(--muted)">${r.avgRound.toFixed(2)} avg/round</div>
+        </div>
+        <div style="text-align:center;">
+          <div>W: ${r.wins}</div>
+          <div>L: ${r.losses}</div>
+          <div>T: ${r.ties}</div>
+          <div>${r.winPct.toFixed(1)}%</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function setAnn(msg, cls=''){
+    els.announcement.textContent = msg;
+    els.announcement.className = cls ? `announce ${cls}` : 'announce';
+  }
+
+  function saveTo(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+  function loadFrom(key, fallback){ try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
+
+  // Undo
+  function undo(){
+    if(!historyStack.length) { setAnn('Nothing to undo.'); return; }
+    const prev = historyStack.pop();
+    players = prev.players;
+    totals = prev.totals;
+    frameScores = prev.frameScores;
+    roundScores = prev.roundScores;
+    currentPlayer = prev.currentPlayer;
+    frameIndex = prev.frameIndex;
+    dart = prev.dart;
+    started = prev.started;
+    renderPlayerInputs();
+    renderScoreboard();
+    updateMeta();
+    setAnn('Undone last action.');
+  }
+
+  // Event listeners
+  els.addPlayerBtn.addEventListener('click', () => {
+    players.push('Player ' + (players.length + 1));
+    renderPlayerInputs();
   });
-}
-
-// set message
-function setMessage(msg){
-  els.message.textContent = msg;
-}
-
-// history & leaderboard persistence
-function finalizeMatch(){
-  // save match to history and update leaderboard (pairwise elo)
-  const history = loadHistory();
-  const leaderboard = loadLeader();
-
-  const match = {
-    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    date: document.getElementById('matchDate').value || (new Date()).toLocaleDateString(),
-    players: players.map(p=>({ name: p.name, total: p.total })),
-  };
-  history.unshift(match);
-  setStorage(STORAGE_KEY_HISTORY, history);
-
-  // update leaderboard aggregated stats
-  // ensure record for each player
-  players.forEach(p=>{
-    if (!leaderboard[p.name]) leaderboard[p.name] = { name:p.name, matches:0, wins:0, losses:0, ties:0, totalPoints:0, totalFrames:0, elo:1200 };
-    const rec = leaderboard[p.name];
-    rec.matches += 1;
-    rec.totalPoints = (rec.totalPoints||0) + (p.total||0);
-    rec.totalFrames = (rec.totalFrames||0) + 10;
+  els.removePlayerBtn.addEventListener('click', () => {
+    if(players.length > 2) {
+      players.pop();
+      renderPlayerInputs();
+    }
+  });
+  els.startBtn.addEventListener('click', () => {
+    players = [...els.playersList.querySelectorAll('input')].map(i => i.value.trim() || 'Player');
+    totals = Array(players.length).fill(0);
+    frameScores = players.map(() => Array(10).fill(null));
+    roundScores = players.map(() => Array.from({length:10}, () => [null,null,null]));
+    currentPlayer = 0;
+    frameIndex = 0;
+    dart = 1;
+    started = true;
+    historyStack = [];
+    setAnn(`Game started. ${players[0]} to select alley.`);
+    renderScoreboard();
+    updateMeta();
+  });
+  els.shotButtons.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-shot]');
+    if(!btn) return;
+    handleShot(btn.dataset.shot);
+  });
+  els.keypad.addEventListener('click', e => {
+    const btn = e.target.closest('button.key:not(.disabled)');
+    if(!btn) return;
+    if(!started || dart !== 1) return;
+    saveSnapshot();
+    selectAlley(btn.textContent);
+  });
+  els.undoBtn.addEventListener('click', undo);
+  els.endTurnBtn.addEventListener('click', () => {
+    const p = players[currentPlayer];
+    const f = roundScores[currentPlayer][frameIndex];
+    if(!f[1] && !f[2]) { setAnn('Throw at least one dart before ending turn.', 'warn'); return; }
+    saveSnapshot();
+    if(!f[1]) f[1] = 'Miss';
+    if(!f[2]) f[2] = 'Miss';
+    finalizeFrame();
+  });
+  els.newGameBtn.addEventListener('click', () => {
+    if(confirm('Start a new game? Current progress will be lost.')) {
+      players = ['Player 1', 'Player 2'];
+      totals = [];
+      frameScores = [];
+      roundScores = [];
+      currentPlayer = 0;
+      frameIndex = 0;
+      dart = 1;
+      started = false;
+      historyStack = [];
+      renderPlayerInputs();
+      renderScoreboard();
+      updateMeta();
+      setAnn('Ready. Add players and start.');
+    }
+  });
+  els.exportHistoryBtn.addEventListener('click', () => {
+    const hist = loadFrom(STORAGE_HISTORY, []);
+    const blob = new Blob([JSON.stringify(hist, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bowling-darts-history.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+  els.importHistoryBtn.addEventListener('click', () => {
+    document.getElementById('importFile').click();
+  });
+  document.getElementById('importFile').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if(!Array.isArray(data)) throw new Error('Invalid file format');
+        if(confirm('Replace current history with imported data?')) {
+          saveTo(STORAGE_HISTORY, data);
+          renderHistory();
+          setAnn('History imported.');
+        }
+      } catch(err) {
+        alert('Import failed: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   });
 
-  // determine winners (lowest)
-  const min = Math.min(...players.map(p=>p.total));
-  const winners = players.filter(p=>p.total === min).map(p=>p.name);
+  // Initialize UI
+  function renderPlayerInputs(){
+    els.playersList.innerHTML = '';
+    players.forEach((p,i) => {
+      const div = document.createElement('div');
+      div.className = 'player-row';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = p;
+      input.addEventListener('input', e => {
+        players[i] = e.target.value;
+        renderScoreboard();
+      });
+      div.appendChild(input);
+      els.playersList.appendChild(div);
+    });
+    els.removePlayerBtn.disabled = players.length <= 2;
+  }
 
-  players.forEach(p=>{
-    const rec = leaderboard[p.name];
-    if (winners.length>1 && winners.includes(p.name)) rec.ties += 1;
-    else if (winners.length===1 && winners[0] === p.name) rec.wins += 1;
-    else rec.losses += 1;
-  });
+  function handleShot(shot){
+    if(!started || dart === 1 || isGameOver()) return;
+    saveSnapshot();
+    roundScores[currentPlayer][frameIndex][dart - 1] = shot;
+    if(dart === 2){
+      dart = 3;
+      setAnn(`${players[currentPlayer]} threw ${shot}. Final dart next.`);
+    } else {
+      finalizeFrame();
+    }
+    updateMeta();
+  }
 
-  // pairwise ELO updates
-  applyElo(leaderboard, players.map(p=>({name:p.name,total:p.total})));
+  function finalizeFrame(){
+    const p = players[currentPlayer];
+    const shots = roundScores[currentPlayer][frameIndex];
+    const p2 = pointsMap[shots[1]] || 0;
+    const p3 = pointsMap[shots[2]] || 0;
+    let total = 0;
+    if(p2 === 10 || p3 === 10) total = 10;
+    else total = p2 + p3;
+    if(total > 10) total = 10;
+    frameScores[currentPlayer][frameIndex] = total;
+    totals[currentPlayer] = frameScores[currentPlayer].reduce((a,b) => a + (b || 0), 0);
+    dart = 1;
+    currentPlayer++;
+    if(currentPlayer >= players.length){
+      currentPlayer = 0;
+      frameIndex++;
+    }
+    if(isGameOver()){
+      started = false;
+      setAnn(`Game over! Winner: ${winnerName()}`, 'good');
+      saveMatch();
+      renderHistory();
+      renderLeaderboard();
+    } else {
+      setAnn(`${players[currentPlayer]} to throw on frame ${frameIndex + 1}.`);
+    }
+    renderScoreboard();
+    updateMeta();
+  }
 
-  setStorage(STORAGE_KEY_LEADER, leaderboard);
+  function winnerName(){
+    let min = Infinity;
+    let winner = '';
+    for(let i=0;i<players.length;i++){
+      if(totals[i] < min){
+        min = totals[i];
+        winner = players[i];
+      }
+    }
+    return winner;
+  }
+
+  function renderScoreboard(){
+    els.scoreHead.innerHTML = '';
+    els.scoreBody.innerHTML = '';
+    const trHead = document.createElement('tr');
+    trHead.innerHTML = `<th>Player</th>${Array.from({length:10},(_,i)=>`<th>F${i+1}</th>`).join('')}<th>Total</th>`;
+    els.scoreHead.appendChild(trHead);
+    players.forEach((p,i) => {
+      const tr = document.createElement('tr');
+      if(started && !isGameOver() && i === currentPlayer) tr.className = 'active-row';
+      const tdName = document.createElement('td');
+      tdName.className = 'name';
+      tdName.textContent = p;
+      tr.appendChild(tdName);
+      for(let f=0;f<10;f++){
+        const td = document.createElement('td');
+        td.className = 'frame-cell';
+        const frame = players.length && frameScores.length ? frameScores[i][f] : null;
+        const shots = roundScores[i] && roundScores[i][f] ? roundScores[i][f] : [];
+        const topDiv = document.createElement('div');
+        topDiv.className = 'frame-top';
+        topDiv.innerHTML = `<span>${shots[0] || '-'}</span><span>${frame || ''}</span>`;
+        const throwsDiv = document.createElement('div');
+        throwsDiv.className = 'throws';
+        for(let d=1;d<=3;d++){
+          const sp = throwSymbol(shots[d] || null);
+          const span = document.createElement('span');
+          span.className = 'throw';
+          span.textContent = sp;
+          throwsDiv.appendChild(span);
+        }
+        td.appendChild(topDiv);
+        td.appendChild(throwsDiv);
+        tr.appendChild(td);
+      }
+      const tdTotal = document.createElement('td');
+      tdTotal.className = 'total';
+      tdTotal.textContent = totals[i] || 0;
+      tr.appendChild(tdTotal);
+      els.scoreBody.appendChild(tr);
+    });
+    updateMeta();
+  }
+
+  // Initialization
+  players = ['Player 1', 'Player 2'];
+  totals = [0,0];
+  frameScores = [Array(10).fill(null), Array(10).fill(null)];
+  roundScores = [Array.from({length:10}, ()=>[null,null,null]), Array.from({length:10}, ()=>[null,null,null])];
+  renderPlayerInputs();
+  buildNumberGrid();
+  renderScoreboard();
   renderHistory();
   renderLeaderboard();
-}
-
-// load helpers
-function loadHistory(){
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY) || '[]'); } catch { return []; }
-}
-function loadLeader(){
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY_LEADER) || '{}'); } catch { return {}; }
-}
-function setStorage(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
-
-// ELO functions (pairwise)
-function expectedScore(ra, rb){ return 1 / (1 + Math.pow(10, (rb - ra) / 400)); }
-function applyElo(leaderboard, playerTotals){
-  const k = 24;
-  playerTotals.forEach(p => { if (!leaderboard[p.name]) leaderboard[p.name] = { name:p.name, matches:0, wins:0, losses:0, ties:0, totalPoints:0, totalFrames:0, elo:1200 }; });
-  for (let i=0;i<playerTotals.length;i++){
-    for (let j=i+1;j<playerTotals.length;j++){
-      const A = playerTotals[i], B = playerTotals[j];
-      const recA = leaderboard[A.name], recB = leaderboard[B.name];
-      const resultA = A.total < B.total ? 1 : A.total === B.total ? 0.5 : 0;
-      const ea = expectedScore(recA.elo, recB.elo);
-      const eb = expectedScore(recB.elo, recA.elo);
-      recA.elo = Math.round(recA.elo + k * (resultA - ea));
-      recB.elo = Math.round(recB.elo + k * ((1 - resultA) - eb));
-    }
-  }
-}
-
-// render history & leaderboard UI
-function renderHistory(){
-  const hist = loadHistory();
-  if (!hist.length) { els.historyDiv.textContent = 'No matches yet.'; return; }
-  els.historyDiv.innerHTML = hist.slice(0,10).map(h=>{
-    return `<div style="padding:8px;border-radius:8px;background:rgba(255,255,255,.02);margin-bottom:8px"><strong>${h.players.map(p=>p.name).join(' vs ')}</strong><div style="color:var(--muted)">${h.date} • ${h.players.map(p=>p.total).join(' - ')}</div></div>`;
-  }).join('');
-}
-
-function renderLeaderboard(){
-  const lb = loadLeader();
-  const rows = Object.values(lb).map(r=>{
-    const avgRound = r.totalFrames ? (r.totalPoints / r.totalFrames) : 0;
-    const winPct = r.matches ? (r.wins / r.matches) * 100 : 0;
-    return Object.assign({}, r, { avgRound, winPct });
-  }).sort((a,b)=> b.elo - a.elo || b.wins - a.wins);
-  if (!rows.length) { els.leaderDiv.textContent = 'No leaderboard data.'; return; }
-  els.leaderDiv.innerHTML = rows.map(r=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,.02);margin-bottom:6px">
-      <div style="font-weight:800">${r.name}</div>
-      <div style="color:var(--muted)">${r.matches} games</div>
-      <div style="color:var(--muted)">W:${r.wins} L:${r.losses} T:${r.ties}</div>
-      <div style="color:var(--muted)">${r.winPct.toFixed(1)}%</div>
-      <div style="font-weight:900">${r.elo} ELO</div>
-      <div style="color:var(--muted)">Avg/frame ${r.avgRound.toFixed(2)}</div>
-    </div>
-  `).join('');
-}
-
-// UI event wiring
-els.addPlayer.addEventListener('click', ()=>{ addPlayerField('Player ' + (players.length+1)); });
-els.removePlayer.addEventListener('click', ()=>{ removePlayerField(); });
-els.startGame.addEventListener('click', ()=>{ startGame(); updateMeta(); });
-els.undoBtn.addEventListener('click', undo);
-els.endTurnBtn.addEventListener('click', ()=>{
-  // If dart 2/3 not thrown, fill with null/miss as appropriate and finalize
-  const p = players[currentPlayer];
-  const f = p.frames[frameIndex];
-  if (!f.d2 && !f.d3){ setMessage('Must throw at least dart 2 or 3 before ending.'); return; }
-  if (!f.d2) f.d2 = 'Miss', f.p2 = 0;
-  if (!f.d3) f.d3 = 'Miss', f.p3 = 0;
-  // finalize
-  saveSnapshot();
-  // compute frame
-  const total = calculateFrameScore(f);
-  f.total = total;
-  p.total += total;
-  f.locked = true;
-  advanceTurn();
-});
-els.resetBtn.addEventListener('click', ()=>{ resetGameState(); setMessage('Reset.'); renderHistory(); renderLeaderboard(); });
-
-// shot button handling (darts 2 & 3 only)
-els.shotButtons.addEventListener('click', e=>{
-  const btn = e.target.closest('[data-shot]');
-  if (!btn) return;
-  const shot = btn.dataset.shot;
-  if (!started || gameOver) { setMessage('Start a game first.'); return; }
-  if (dart === 1) { setMessage('Select alley first (press a number 1–20).'); return; }
-  // apply
-  applyThrow(shot);
-});
-
-// keypad built once
-buildKeypad();
-
-// keyboard shortcuts (1-9 and 0 for 10, plus 1..20 mapping is complex; we skip keyboard mapping for now)
-
-// initial players default
-players = [ createPlayer('Alice'), createPlayer('Bob') ];
-renderPlayersInputs();
-buildKeypad();
-renderBoard();
-updateMeta();
-renderHistory();
-renderLeaderboard();
-
-// helper to add player field in UI mapping
-function addPlayerField(name){
-  players.push(createPlayer(name));
-  renderPlayersInputs();
-  renderBoard();
-  updateMeta();
-}
-
-// helper remove last player
-function removePlayerField(){
-  if (players.length <= 2) return;
-  players.pop();
-  renderPlayersInputs();
-  renderBoard();
-  updateMeta();
-}
-
-// fill in keypad click listeners already built in buildKeypad closure above
-
-// small utility for escaping
-function escapeHtml(s){ return String(s).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
-
-// make sure players inputs are editable name fields; renderPlayersInputs sets input values
-function renderPlayersInputs(){
-  els.playersList.innerHTML = '';
-  players.forEach((p,i)=>{
-    const container = document.createElement('div');
-    container.className = 'player-row';
-    const input = document.createElement('input');
-    input.value = p.name;
-    input.addEventListener('input', e=>{ players[i].name = e.target.value; renderBoard(); });
-    container.appendChild(input);
-    els.playersList.appendChild(container);
-  });
-  refreshAddRemoveVisibility();
-}
-
-// small fix: buildKeypad needs to attach handlers to existing keypad; reimplement to ensure handlers present
-function buildKeypad(){
-  els.keypad.innerHTML = '';
-  for (let i=1;i<=20;i++){
-    const b = document.createElement('button');
-    b.className = 'key';
-    b.textContent = i;
-    b.addEventListener('click', ()=> {
-      if (!started || gameOver || dart !== 1) { setMessage('Not available'); return; }
-      saveSnapshot();
-      const seg = alleyMap[i];
-      applyThrow(seg, i);
-    });
-    els.keypad.appendChild(b);
-  }
-}
-
-// applyThrow now handles all dart positions and multi-player logic; keypadNumber optional
-function applyThrow(segment, keypadNum=null){
-  if (!started || gameOver) return;
-  const p = players[currentPlayer];
-  const f = p.frames[frameIndex];
-
-  if (dart === 1){
-    // select alley
-    f.alley = segment;
-    f.d1 = segment;
-    f.alleyNumber = keypadNum;
-    // double on dart1 strike (if not 10th frame)
-    if (segment === 'Double' && frameIndex < 9){
-      f.total = 10;
-      f.locked = true;
-      p.total += 10;
-      f.result = 'X';
-      setMessage(`${p.name} strike on dart 1.`);
-      advanceTurn();
-      return;
-    }
-    setMessage(`${p.name} selected alley ${segment}.`);
-    dart = 2;
-    updateMeta();
-    renderBoard();
-    return;
-  }
-
-  if (dart === 2){
-    f.d2 = segment;
-    f.p2 = scoreForDart(f, segment, 2);
-    // double on dart2 strike (if not 10th frame)
-    if (segment === 'Double' && frameIndex < 9){
-      f.total = 10;
-      f.locked = true;
-      p.total += 10;
-      f.result = 'X';
-      setMessage(`${p.name} strike on dart 2.`);
-      saveSnapshot();
-      advanceTurn();
-      return;
-    }
-    setMessage(`${p.name} dart 2: ${segment} (${f.p2})`);
-    dart = 3;
-    updateMeta();
-    renderBoard();
-    return;
-  }
-
-  if (dart === 3){
-    f.d3 = segment;
-    f.p3 = scoreForDart(f, segment, 3);
-    // calculate frame total (cap to 10)
-    saveSnapshot();
-    const frameScore = calculateFrameScore(f);
-    f.total = frameScore;
-    p.total += frameScore;
-    f.locked = true;
-    f.result = (frameScore===10 ? (f.d2==='Double' || f.d3==='Double' ? 'X' : ( ((f.p2||0) + (f.p3||0))===10 ? '/' : '' )) : '');
-    setMessage(`${p.name} frame score: ${frameScore}.`);
-    advanceTurn();
-    return;
-  }
-}
-
-// same as earlier
-function scoreForDart(frame, segment, dartNum){
-  if (segment === 'Miss' || !segment) return 0;
-  if (segment === 'Double') return 10;
-  return points[segment] || 0;
-}
-
-// finalize handled in advanceTurn where we check game over.
-
-function setMessage(msg){ els.message.textContent = msg; }
-
-// Undo handled earlier
-
-// render helpers already above
-
-// small integration: when game over show winner and save done in finalizeMatch
-
-// Export some functions to global for debugging (optional)
-window.BowlingDarts = {
-  players, startGame, resetGameState, applyThrow, undo, renderBoard
-};
-
+  setAnn('Enter player names and press Start.');
 </script>
 </body>
 </html>
