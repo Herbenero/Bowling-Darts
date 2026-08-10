@@ -304,65 +304,34 @@
     }
 
     function toggleShotButtons(disabled) {
-      Array.from(els.shotButtons.querySelectorAll('[data-shot]')).forEach(b => {
-        b.disabled = disabled;
-        b.style.opacity = disabled ? .45 : 1;
-      });
+  Array.from(els.shotButtons.querySelectorAll('[data-shot]')).forEach(b => {
+    // Keep 'Double' enabled on Dart 1 so a strike can be scored
+    if (dart === 1 && b.dataset.shot === 'Double') {
+      b.disabled = false;
+      b.style.opacity = 1;
+    } else {
+      b.disabled = disabled;
+      b.style.opacity = disabled ? .45 : 1;
     }
+  });
+}
 
-    function applyThrow(shot, laneNum = null) {
-      if (!started || gameOver) return;
-      saveSnapshot();
-
-      const p = players[currentPlayer];
-      const f = p.frames[frameIndex];
-
-      if (dart === 1) {
-        f.d1 = shot;
-        f.lane = laneNum ? `Lane ${laneNum}` : shot;
-        if (shot === 'Double') {
-          f.result = 'X';
-          f.v2 = 0; f.v3 = 0;
-          dart = 3;
-          setMessage(`${p.name} HIT STRIKE ON DART 1!`);
-        } else {
-          dart = 2;
-          setMessage(`${p.name} selected ${f.lane}. Throw Dart 2.`);
-        }
-      } else if (dart === 2) {
-        f.d2 = shot;
-        f.v2 = pointValues[shot] || 0;
-        if (shot === 'Double') {
-          f.result = 'X';
-          dart = 3;
-          setMessage(`${p.name} HIT STRIKE ON DART 2!`);
-        } else {
-          dart = 3;
-          setMessage(`${p.name} threw Dart 2: ${shot} (${f.v2} pts). Throw Dart 3.`);
-        }
-      } else if (dart === 3) {
-        f.d3 = shot;
-        f.v3 = pointValues[shot] || 0;
-
-        if (f.result !== 'X') {
-          let sum = (f.v2 || 0) + (f.v3 || 0);
-          if (sum >= 10) {
-            f.result = '/';
-            setMessage(`${p.name} HIT SPARE ON DART 3! Click End Turn.`);
-          } else {
-            f.result = sum;
-            setMessage(`${p.name} finished throwing. Total base: ${sum}. Click End Turn.`);
-          }
-        } else {
-          setMessage(`${p.name} turn complete. Click End Turn.`);
-        }
-      }
-
-      calculateAllScores();
-      renderBoard();
-      updateMeta();
-    }
-
+    if (dart === 1) {
+  if (shot === 'Double') {
+    f.d1 = 'Double';
+    f.lane = 'Strike';
+    f.result = 'X';
+    f.v2 = 0;
+    f.v3 = 0;
+    dart = 3; // Moves dart count to finish the turn
+    setMessage(`${p.name} HIT STRIKE ON DART 1! Click End Turn.`);
+  } else {
+    f.d1 = shot;
+    f.lane = laneNum ? `Lane ${laneNum}` : shot;
+    dart = 2;
+    setMessage(`${p.name} selected ${f.lane}. Throw Dart 2.`);
+  }
+}
     function endTurn() {
       if (!started || gameOver) return;
       const p = players[currentPlayer];
