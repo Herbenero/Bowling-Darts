@@ -17,7 +17,9 @@
       --line: #22303b;
       --radius: 12px;
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -26,26 +28,37 @@
       min-height: 100vh;
       padding: 20px;
     }
+
     .wrap {
       max-width: 1200px;
       margin: 0 auto;
       display: grid;
       gap: 16px;
     }
+
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
     }
+
     h1 { margin: 0; font-size: 1.6rem; }
+
     .panel {
       background: rgba(255, 255, 255, .03);
       border: 1px solid var(--line);
       padding: 14px;
       border-radius: 12px;
     }
-    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     input, select, button {
       border-radius: 10px;
       border: 1px solid var(--line);
@@ -53,31 +66,52 @@
       color: var(--text);
       padding: 10px 12px;
     }
+
     button { cursor: pointer; }
+
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), #5adf84);
       color: #052e16;
       font-weight: 800;
       border: none;
     }
+
     .btn-alt {
       background: linear-gradient(135deg, var(--accent2), #7fd6ff);
       color: #042e3a;
       border: none;
       font-weight: 800;
     }
+
     .btn-warn {
       background: linear-gradient(135deg, var(--warn), #ff7f7f);
       color: white;
       border: none;
       font-weight: 800;
     }
-    .setup-grid { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
-    .players { display: grid; gap: 8px; margin-top: 8px; }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+    }
+
+    .players {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
     .player-row { display: flex; gap: 8px; }
     .player-row input { flex: 1; }
-    .game-grid { display: grid; grid-template-columns: 1fr 420px; gap: 16px; }
-    .meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+    .meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
     .meta .card {
       background: rgba(0, 0, 0, .12);
       padding: 10px;
@@ -85,7 +119,14 @@
       min-width: 110px;
       text-align: center;
     }
-    .controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
     .control-btn {
       padding: 12px;
       border-radius: 10px;
@@ -94,7 +135,14 @@
       flex: 1;
       min-width: 80px;
     }
-    .keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
+
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
     .key {
       padding: 12px;
       border-radius: 10px;
@@ -103,45 +151,102 @@
       text-align: center;
       cursor: pointer;
     }
-    .key.disabled { opacity: .45; pointer-events: none; }
-    .announce { margin-top: 12px; padding: 12px; border-radius: 10px; background: rgba(255, 255, 255, .02); }
-    .vertical-scoreboard {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+
+    .key.disabled {
+      opacity: .45;
+      pointer-events: none;
+    }
+
+    .announce {
       margin-top: 12px;
-      max-height: 600px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-    .player-card {
-      background: rgba(0, 0, 0, .2);
-      border: 1px solid var(--line);
-      border-radius: 10px;
       padding: 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .02);
     }
-    .player-card.active-card {
-      border-color: var(--accent);
-      background: rgba(34, 197, 94, .05);
+
+    /* Horizontal Scoreboard Styles */
+    .scoreboard-container {
+      overflow-x: auto;
+      margin-top: 12px;
+      width: 100%;
     }
-    .player-card-header {
+
+    .h-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 850px;
+      text-align: center;
+    }
+
+    .h-table th, .h-table td {
+      padding: 8px 6px;
+      border: 1px solid var(--line);
+    }
+
+    .h-table th {
+      background: rgba(255, 255, 255, .04);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .h-table tr.active-row {
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 4px solid var(--accent);
+    }
+
+    .frame-cell {
+      font-size: 0.85rem;
+      line-height: 1.2;
+    }
+
+    .frame-darts {
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .frame-val {
+      font-weight: 800;
+      margin-top: 2px;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-content {
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      text-align: center;
+    }
+
+    .standing-card {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      border: 1px solid var(--line);
       margin-bottom: 8px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 6px;
     }
-    .player-card-name { font-weight: 800; font-size: 1.1rem; }
-    .player-card-score { font-weight: 900; font-size: 1.2rem; color: var(--gold); }
-    .v-table { width: 100%; border-collapse: collapse; }
-    .v-table th, .v-table td { padding: 6px 8px; border: 1px solid var(--line); text-align: center; }
-    .v-table th { background: rgba(255, 255, 255, .02); color: var(--muted); font-size: .8rem; }
-    .v-table td.frame-num { font-weight: 800; color: var(--muted); width: 60px; }
-    .v-table td.frame-score { font-weight: 800; width: 60px; }
-    .v-table td.darts-cell { font-size: 0.8rem; text-align: left; color: var(--muted); }
+
+    .standing-card.first {
+      border-color: var(--gold);
+      background: rgba(241, 193, 93, 0.1);
+    }
+
     @media (max-width: 980px) {
-      .game-grid { grid-template-columns: 1fr; }
       .keys { grid-template-columns: repeat(4, 1fr); }
     }
   </style>
@@ -158,6 +263,7 @@
         <button id="showLeaderboard" class="control-btn">Leaderboard</button>
       </div>
     </header>
+
     <section class="panel setup-grid">
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -183,6 +289,7 @@
           <button id="startGame" class="btn-primary">Start Game</button>
         </div>
       </div>
+
       <div style="padding-left:12px">
         <div style="font-weight:800">Rules</div>
         <ul style="color:var(--muted);margin-top:8px;font-size:0.9rem">
@@ -193,43 +300,63 @@
         </ul>
       </div>
     </section>
-    <section class="game-grid">
-      <div class="panel" id="gamePanel">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">Game Controls</div>
-          <div style="color:var(--muted)"><span id="statusText">Add players & start</span></div>
+
+    <!-- Horizontal Scoreboard Section -->
+    <section class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <strong>Horizontal Scoreboard</strong>
+          <div style="color:var(--muted);font-size:0.85rem">Frame scores and dart history for all players</div>
         </div>
-        <div class="meta">
-          <div class="card"><div style="color:var(--muted)">Current</div><div id="currentPlayer" style="font-weight:900">—</div></div>
-          <div class="card"><div style="color:var(--muted)">Round</div><div id="frameLabel" style="font-weight:900">—</div></div>
-          <div class="card"><div style="color:var(--muted)">Dart</div><div id="dartLabel" style="font-weight:900">—</div></div>
-          <div class="card"><div style="color:var(--muted)">Board</div><div id="modeLabel" style="font-weight:900">—</div></div>
-          <div class="card"><div style="color:var(--muted)">Lane</div><div id="alleyLabel" style="font-weight:900">—</div></div>
-        </div>
-        <div class="controls" id="shotButtons"></div>
-        <div class="keys" id="keypad"></div>
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button id="undo" class="control-btn">Undo Shot</button>
-          <button id="endTurn" class="btn-alt">End Turn</button>
-          <button id="reset" class="btn-warn">New Game</button>
-        </div>
-        <div class="announce" id="message" style="margin-top:12px">Add players and start the game.</div>
       </div>
-      <aside class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:end">
-          <div><strong>Scoreboard</strong><div style="color:var(--muted)">Vertical Frames View</div></div>
-        </div>
-        <div id="verticalScoreboard" class="vertical-scoreboard"></div>
-        <div style="margin-top:12px">
-          <strong>History</strong>
-          <div id="history" style="color:var(--muted);margin-top:8px">No matches yet.</div>
-        </div>
-      </aside>
+      <div id="horizontalScoreboard"></div>
+    </section>
+
+    <!-- Game Controls Section -->
+    <section class="panel" id="gamePanel">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:800">Game Controls</div>
+        <div style="color:var(--muted)"><span id="statusText">Add players & start</span></div>
+      </div>
+      <div class="meta">
+        <div class="card"><div style="color:var(--muted)">Current</div><div id="currentPlayer" style="font-weight:900">—</div></div>
+        <div class="card"><div style="color:var(--muted)">Round</div><div id="frameLabel" style="font-weight:900">—</div></div>
+        <div class="card"><div style="color:var(--muted)">Dart</div><div id="dartLabel" style="font-weight:900">—</div></div>
+        <div class="card"><div style="color:var(--muted)">Board</div><div id="modeLabel" style="font-weight:900">—</div></div>
+        <div class="card"><div style="color:var(--muted)">Lane</div><div id="alleyLabel" style="font-weight:900">—</div></div>
+      </div>
+      <div class="controls" id="shotButtons"></div>
+      <div class="keys" id="keypad"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="undo" class="control-btn">Undo Shot</button>
+        <button id="endTurn" class="btn-alt">End Turn</button>
+        <button id="reset" class="btn-warn">New Game</button>
+      </div>
+      <div class="announce" id="message" style="margin-top:12px">Add players and start the game.</div>
     </section>
   </div>
 
+  <!-- End Game Scoreboard Modal -->
+  <div id="finalModal" class="modal-overlay">
+    <div class="panel modal-content">
+      <h2 style="margin-top:0; color:var(--gold);">🏆 Game Over 🏆</h2>
+      <div id="winnerText" style="font-size:1.3rem; font-weight:800;"></div>
+      <div id="finalStandings" style="margin:20px 0;"></div>
+      <button onclick="document.getElementById('finalModal').style.display='none'" class="btn-primary" style="width:100%;">Close & View Scores</button>
+    </div>
+  </div>
+
   <script>
-    const pointValues = { 'Miss': 0, 'Outer Single': 3, 'Middle': 5, 'Inner Single': 7, 'Triple': 8, 'Quad': 9, 'Double': 10 };
+    const pointValues = {
+      'Miss': 0,
+      'Outer Single': 3,
+      'Middle': 5,
+      'Inner Single': 7,
+      'Triple': 8,
+      'Quad': 9,
+      'Double': 10
+    };
+
     let players = [];
     let started = false;
     let gameOver = false;
@@ -258,8 +385,10 @@
       endTurnBtn: document.getElementById('endTurn'),
       resetBtn: document.getElementById('reset'),
       message: document.getElementById('message'),
-      verticalScoreboard: document.getElementById('verticalScoreboard'),
-      historyDiv: document.getElementById('history')
+      horizontalScoreboard: document.getElementById('horizontalScoreboard'),
+      finalModal: document.getElementById('finalModal'),
+      winnerText: document.getElementById('winnerText'),
+      finalStandings: document.getElementById('finalStandings')
     };
 
     function createPlayer(name) {
@@ -295,6 +424,7 @@
       buttons.push('Inner Single', 'Triple');
       if (type === 'quad') buttons.push('Quad');
       buttons.push('Double');
+
       els.shotButtons.innerHTML = buttons.map(b => `<button class="control-btn" data-shot="${b}">${b}</button>`).join('');
     }
 
@@ -331,13 +461,16 @@
         toggleShotButtons(true);
         return;
       }
+
       const p = players[currentPlayer];
       els.statusText.textContent = `${p.name} — Round ${frameIndex + 1}, Dart ${dart}`;
       els.currentPlayerLabel.textContent = p.name;
       els.frameLabel.textContent = `${frameIndex + 1}`;
       els.dartLabel.textContent = `${dart} / 3`;
+
       const f = p.frames[frameIndex];
       els.alleyLabel.textContent = f.lane ?? '—';
+
       const d1Active = dart === 1;
       Array.from(els.keypad.children).forEach(k => {
         k.classList.toggle('disabled', !d1Active);
@@ -395,7 +528,6 @@
         f.d3 = shot;
         f.v3 = pointValues[shot] || 0;
         const combined = f.v2 + f.v3;
-
         if (f.result !== 'X') {
           if (combined >= 10) {
             f.result = '/';
@@ -416,27 +548,31 @@
 
     function endTurn() {
       if (!started || gameOver) return;
+
       const p = players[currentPlayer];
       const f = p.frames[frameIndex];
       if (!f.d1) {
         setMessage('You must throw Dart 1 to pick a lane or hit Double.');
         return;
       }
+
       f.turnComplete = true;
       calculateAllScores();
+
       currentPlayer++;
       if (currentPlayer >= players.length) {
         currentPlayer = 0;
         frameIndex++;
       }
       dart = 1;
+
       if (checkGameOver()) {
         gameOver = true;
-        const winner = getWinner();
-        setMessage(`GAME OVER! Winner: ${winner.name} with ${winner.totalScore} pts!`);
+        showFinalScoreboard();
       } else {
         setMessage(`Turn ended. ${players[currentPlayer].name}'s turn.`);
       }
+
       renderBoard();
       updateMeta();
     }
@@ -468,18 +604,13 @@
       for (let i = currentIdx + 1; i < player.frames.length; i++) {
         const nextFrame = player.frames[i];
         if (!nextFrame.d1) break;
+
         if (nextFrame.result === 'X') {
           score += 10;
           dartsFound += 1;
         } else {
-          if (nextFrame.d2) {
-            score += nextFrame.v2;
-            dartsFound++;
-          }
-          if (dartsFound < 2 && nextFrame.d3) {
-            score += nextFrame.v3;
-            dartsFound++;
-          }
+          if (nextFrame.d2) { score += nextFrame.v2; dartsFound++; }
+          if (dartsFound < 2 && nextFrame.d3) { score += nextFrame.v3; dartsFound++; }
         }
         if (dartsFound >= 2) break;
       }
@@ -519,69 +650,77 @@
       });
     }
 
-    function getWinner() {
-      let top = players[0];
-      players.forEach(p => {
-        if (p.totalScore > top.totalScore) top = p;
-      });
-      return top;
+    function showFinalScoreboard() {
+      const sortedPlayers = [...players].sort((a, b) => b.totalScore - a.totalScore);
+      const winner = sortedPlayers[0];
+
+      els.winnerText.textContent = `Winner: ${winner.name} (${winner.totalScore} pts)`;
+
+      els.finalStandings.innerHTML = sortedPlayers.map((p, rank) => `
+        <div class="standing-card ${rank === 0 ? 'first' : ''}">
+          <span style="font-weight: 800;">#${rank + 1} ${escapeHtml(p.name)}</span>
+          <span style="font-weight: 900; color: var(--gold);">${p.totalScore} pts</span>
+        </div>
+      `).join('');
+
+      setMessage(`GAME OVER! Winner: ${winner.name} with ${winner.totalScore} pts!`);
+      els.finalModal.style.display = 'flex';
     }
 
     function renderBoard() {
-      els.verticalScoreboard.innerHTML = '';
-      players.forEach((p, pi) => {
-        const card = document.createElement('div');
-        card.className = 'player-card' + (started && !gameOver && pi === currentPlayer ? ' active-card' : '');
-        let rowsHtml = '';
-        for (let f = 0; f < 10; f++) {
-          const fr = p.frames[f];
-          let subText = [fr.d1, fr.d2, fr.d3].filter(Boolean).join(', ');
-          let scoreDisplay = fr.result !== '' ? fr.result : (fr.total || '-');
-          rowsHtml += `
-            <tr>
-              <td class="frame-num">F${f + 1}</td>
-              <td class="frame-score">${scoreDisplay}</td>
-              <td class="darts-cell">${subText || '—'}</td>
-            </tr>
-          `;
-        }
-        let b1 = p.frames[10].result !== '' ? p.frames[10].result : '';
-        let b2 = p.frames[11].result !== '' ? p.frames[11].result : '';
-        if (b1 || b2) {
-          rowsHtml += `
-            <tr>
-              <td class="frame-num">Bonus</td>
-              <td class="frame-score">${b1} ${b2}</td>
-              <td class="darts-cell">—</td>
-            </tr>
-          `;
-        }
-        card.innerHTML = `
-          <div class="player-card-header">
-            <span class="player-card-name">${escapeHtml(p.name)}</span>
-            <span class="player-card-score">${p.totalScore} pts</span>
-          </div>
-          <table class="v-table">
+      let tableHtml = `
+        <div class="scoreboard-container">
+          <table class="h-table">
             <thead>
               <tr>
-                <th>Frame</th>
-                <th>Score</th>
-                <th>Darts Thrown</th>
+                <th style="width:120px; text-align:left; padding-left:10px;">Player</th>
+                <th>F1</th><th>F2</th><th>F3</th><th>F4</th><th>F5</th>
+                <th>F6</th><th>F7</th><th>F8</th><th>F9</th><th>F10</th>
+                <th>Bonus</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
-              ${rowsHtml}
+      `;
+
+      players.forEach((p, pi) => {
+        const isActive = started && !gameOver && pi === currentPlayer;
+        tableHtml += `<tr class="${isActive ? 'active-row' : ''}">`;
+        tableHtml += `<td style="text-align:left; font-weight:800; padding-left:10px;">${escapeHtml(p.name)}</td>`;
+
+        for (let f = 0; f < 10; f++) {
+          const fr = p.frames[f];
+          let darts = [fr.d1, fr.d2, fr.d3].filter(Boolean).join('/');
+          let scoreDisplay = fr.result !== '' ? fr.result : (fr.total || '-');
+
+          tableHtml += `
+            <td class="frame-cell">
+              <div class="frame-darts">${darts || '—'}</div>
+              <div class="frame-val">${scoreDisplay}</div>
+            </td>
+          `;
+        }
+
+        let b1 = p.frames[10].result !== '' ? p.frames[10].result : '';
+        let b2 = p.frames[11].result !== '' ? p.frames[11].result : '';
+        let bonusText = (b1 || b2) ? `${b1} ${b2}` : '—';
+
+        tableHtml += `<td class="frame-cell"><div class="frame-val">${bonusText}</div></td>`;
+        tableHtml += `<td style="font-weight:900; color:var(--gold); font-size:1.1rem;">${p.totalScore}</td>`;
+        tableHtml += `</tr>`;
+      });
+
+      tableHtml += `
             </tbody>
           </table>
-        `;
-        els.verticalScoreboard.appendChild(card);
-      });
+        </div>
+      `;
+
+      els.horizontalScoreboard.innerHTML = tableHtml;
     }
 
     function saveSnapshot() {
-      historyStack.push(JSON.parse(JSON.stringify({
-        players, started, gameOver, currentPlayer, frameIndex, dart
-      })));
+      historyStack.push(JSON.parse(JSON.stringify({ players, started, gameOver, currentPlayer, frameIndex, dart })));
       if (historyStack.length > 100) historyStack.shift();
     }
 
@@ -604,7 +743,9 @@
     }
 
     function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      return String(s).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
     }
 
     // Event Listeners
