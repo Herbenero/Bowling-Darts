@@ -1,247 +1,271 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bowling Darts</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bowling Darts — Multiplayer</title>
   <style>
     :root {
-      --bg: #121820;
-      --panel: #1e2632;
-      --accent: #2563eb;
-      --gold: #f59e0b;
-      --line: #334155;
-      --text: #f8fafc;
-      --subtext: #94a3b8;
+      --bg: #07101a;
+      --panel: #0b1520;
+      --muted: #94a3b8;
+      --text: #e6eef6;
+      --accent: #22c55e;
+      --accent2: #38bdf8;
+      --warn: #ef4444;
+      --gold: #f1c15d;
+      --line: #22303b;
+      --radius: 12px;
     }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 20px;
-      background: var(--bg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: linear-gradient(180deg, #04101a, #07101a);
       color: var(--text);
-      font-family: system-ui, -apple-system, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
     }
-
-    .container {
-      max-width: 900px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
       gap: 16px;
     }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 16px;
-    }
-
-    .controls, .player-setup {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    input, select, button {
-      background: #0f172a;
-      border: 1px solid var(--line);
-      color: var(--text);
-      padding: 8px 14px;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-
-    button {
-      cursor: pointer;
-      background: var(--accent);
-      border: none;
-      font-weight: 600;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    .btn-secondary {
-      background: #475569;
-    }
-
-    .board-container {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-
-    th, td {
-      border: 1px solid var(--line);
-      padding: 8px 4px;
-    }
-
-    th {
-      background: #0f172a;
-    }
-
-    .active-player {
-      background: rgba(37, 99, 235, 0.2);
-    }
-
-    .keypad {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-    }
-
-    .keypad button {
-      padding: 12px 4px;
-      background: #1e293b;
-      border: 1px solid var(--line);
-    }
-
-    .message {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: var(--gold);
-      min-height: 1.5em;
-    }
-
-    /* Modal Styling */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(4px);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal-content {
-      max-width: 500px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      text-align: center;
-    }
-
-    .standings-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin: 20px 0;
-    }
-
-    .standing-card {
+    header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      border: 1px solid var(--line);
+      gap: 12px;
     }
-
-    .standing-card.first {
-      border-color: var(--gold);
-      background: rgba(245, 158, 11, 0.1);
+    h1 { margin: 0; font-size: 1.6rem; }
+    .panel {
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid var(--line);
+      padding: 14px;
+      border-radius: 12px;
+    }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    input, select, button {
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #071922;
+      color: var(--text);
+      padding: 10px 12px;
+    }
+    button { cursor: pointer; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #5adf84);
+      color: #052e16;
+      font-weight: 800;
+      border: none;
+    }
+    .btn-alt {
+      background: linear-gradient(135deg, var(--accent2), #7fd6ff);
+      color: #042e3a;
+      border: none;
+      font-weight: 800;
+    }
+    .btn-warn {
+      background: linear-gradient(135deg, var(--warn), #ff7f7f);
+      color: white;
+      border: none;
+      font-weight: 800;
+    }
+    .setup-grid { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+    .players { display: grid; gap: 8px; margin-top: 8px; }
+    .player-row { display: flex; gap: 8px; }
+    .player-row input { flex: 1; }
+    .game-grid { display: grid; grid-template-columns: 1fr 420px; gap: 16px; }
+    .meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .meta .card {
+      background: rgba(0, 0, 0, .12);
+      padding: 10px;
+      border-radius: 8px;
+      min-width: 110px;
+      text-align: center;
+    }
+    .controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .control-btn {
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .02);
+      font-weight: 700;
+      flex: 1;
+      min-width: 80px;
+    }
+    .keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
+    .key {
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .02);
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+    }
+    .key.disabled { opacity: .45; pointer-events: none; }
+    .announce { margin-top: 12px; padding: 12px; border-radius: 10px; background: rgba(255, 255, 255, .02); }
+    .vertical-scoreboard {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 12px;
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .player-card {
+      background: rgba(0, 0, 0, .2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .player-card.active-card {
+      border-color: var(--accent);
+      background: rgba(34, 197, 94, .05);
+    }
+    .player-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+    }
+    .player-card-name { font-weight: 800; font-size: 1.1rem; }
+    .player-card-score { font-weight: 900; font-size: 1.2rem; color: var(--gold); }
+    .v-table { width: 100%; border-collapse: collapse; }
+    .v-table th, .v-table td { padding: 6px 8px; border: 1px solid var(--line); text-align: center; }
+    .v-table th { background: rgba(255, 255, 255, .02); color: var(--muted); font-size: .8rem; }
+    .v-table td.frame-num { font-weight: 800; color: var(--muted); width: 60px; }
+    .v-table td.frame-score { font-weight: 800; width: 60px; }
+    .v-table td.darts-cell { font-size: 0.8rem; text-align: left; color: var(--muted); }
+    @media (max-width: 980px) {
+      .game-grid { grid-template-columns: 1fr; }
+      .keys { grid-template-columns: repeat(4, 1fr); }
     }
   </style>
 </head>
 <body>
-
-  <div class="container">
-    <h1>🎯 Bowling Darts</h1>
-
-    <div class="panel player-setup">
-      <div id="playerInputs"></div>
-      <button id="addPlayer">+ Add Player</button>
-      <button id="removePlayer" class="btn-secondary">- Remove</button>
-      <select id="boardSelector">
-        <option value="standard">Standard Board</option>
-        <option value="quad">Quad Board (4x)</option>
-      </select>
-      <button id="startGame">Start Game</button>
-    </div>
-
-    <div class="panel">
-      <div class="message" id="message">Configure players and press Start Game!</div>
-      <div id="meta" style="margin-top: 6px; color: var(--subtext);"></div>
-    </div>
-
-    <div class="panel board-container">
-      <table id="scoreboard">
-        <thead>
-          <tr id="headerRow"></tr>
-        </thead>
-        <tbody id="boardBody"></tbody>
-      </table>
-    </div>
-
-    <div class="panel">
-      <div class="keypad" id="shotButtons"></div>
-      <div style="margin-top: 12px; display: flex; gap: 8px;">
-        <button id="endTurnBtn" style="flex: 2;">End Turn</button>
-        <button id="undoBtn" class="btn-secondary" style="flex: 1;">Undo</button>
-        <button id="resetBtn" class="btn-secondary" style="flex: 1;">Reset</button>
+  <div class="wrap">
+    <header class="panel">
+      <div>
+        <h1>Bowling Darts</h1>
+        <div style="color:var(--muted);margin-top:6px">First dart selects lane or hits Double for a Strike. Score remaining darts.</div>
       </div>
-    </div>
-  </div>
-
-  <!-- Final Scoreboard Modal -->
-  <div id="finalModal" class="modal-overlay">
-    <div class="panel modal-content">
-      <h2 style="margin-top: 0; color: var(--gold);">🏆 Game Over 🏆</h2>
-      <div id="winnerText" style="font-size: 1.3rem; font-weight: 800;"></div>
-      <div id="finalStandings" class="standings-list"></div>
-      <button onclick="document.getElementById('finalModal').style.display='none'" style="width: 100%;">Close & View Scorecard</button>
-    </div>
+      <div class="row">
+        <button id="showHistory" class="control-btn">History</button>
+        <button id="showLeaderboard" class="control-btn">Leaderboard</button>
+      </div>
+    </header>
+    <section class="panel setup-grid">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Players</strong></div>
+          <div class="row">
+            <button id="addPlayer" class="btn-alt">Add Player</button>
+            <button id="removePlayer" class="control-btn">Remove</button>
+          </div>
+        </div>
+        <div class="players" id="playersList"></div>
+        <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <div>
+            <label style="color:var(--muted);margin-right:6px">Board Type:</label>
+            <select id="boardSelector">
+              <option value="basic">Basic Board</option>
+              <option value="quad">Quad Board</option>
+            </select>
+          </div>
+          <div>
+            <label style="color:var(--muted);margin-right:6px">Match Date:</label>
+            <input id="matchDate" type="date">
+          </div>
+          <button id="startGame" class="btn-primary">Start Game</button>
+        </div>
+      </div>
+      <div style="padding-left:12px">
+        <div style="font-weight:800">Rules</div>
+        <ul style="color:var(--muted);margin-top:8px;font-size:0.9rem">
+          <li><strong>Dart 1:</strong> Selects lane (1–20). Double = Strike (X, value 10 + next 2 darts).</li>
+          <li><strong>Dart 2:</strong> Double = Strike. Scoring: Outer=3, Middle=5, Inner=7, Triple=8, Quad=9.</li>
+          <li><strong>Dart 3:</strong> If Dart 2+3 &ge; 10 = Spare (/, value 10 + next round's Dart 2).</li>
+          <li>Game advances <em>only</em> when <strong>End Turn</strong> is clicked.</li>
+        </ul>
+      </div>
+    </section>
+    <section class="game-grid">
+      <div class="panel" id="gamePanel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800">Game Controls</div>
+          <div style="color:var(--muted)"><span id="statusText">Add players & start</span></div>
+        </div>
+        <div class="meta">
+          <div class="card"><div style="color:var(--muted)">Current</div><div id="currentPlayer" style="font-weight:900">—</div></div>
+          <div class="card"><div style="color:var(--muted)">Round</div><div id="frameLabel" style="font-weight:900">—</div></div>
+          <div class="card"><div style="color:var(--muted)">Dart</div><div id="dartLabel" style="font-weight:900">—</div></div>
+          <div class="card"><div style="color:var(--muted)">Board</div><div id="modeLabel" style="font-weight:900">—</div></div>
+          <div class="card"><div style="color:var(--muted)">Lane</div><div id="alleyLabel" style="font-weight:900">—</div></div>
+        </div>
+        <div class="controls" id="shotButtons"></div>
+        <div class="keys" id="keypad"></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button id="undo" class="control-btn">Undo Shot</button>
+          <button id="endTurn" class="btn-alt">End Turn</button>
+          <button id="reset" class="btn-warn">New Game</button>
+        </div>
+        <div class="announce" id="message" style="margin-top:12px">Add players and start the game.</div>
+      </div>
+      <aside class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:end">
+          <div><strong>Scoreboard</strong><div style="color:var(--muted)">Vertical Frames View</div></div>
+        </div>
+        <div id="verticalScoreboard" class="vertical-scoreboard"></div>
+        <div style="margin-top:12px">
+          <strong>History</strong>
+          <div id="history" style="color:var(--muted);margin-top:8px">No matches yet.</div>
+        </div>
+      </aside>
+    </section>
   </div>
 
   <script>
+    const pointValues = { 'Miss': 0, 'Outer Single': 3, 'Middle': 5, 'Inner Single': 7, 'Triple': 8, 'Quad': 9, 'Double': 10 };
     let players = [];
+    let started = false;
+    let gameOver = false;
     let currentPlayer = 0;
     let frameIndex = 0;
     let dart = 1;
-    let started = false;
-    let gameOver = false;
-    let boardType = 'standard';
+    let boardType = 'basic';
     let historyStack = [];
 
     const els = {
-      playerInputs: document.getElementById('playerInputs'),
+      playersList: document.getElementById('playersList'),
       addPlayer: document.getElementById('addPlayer'),
       removePlayer: document.getElementById('removePlayer'),
-      boardSelector: document.getElementById('boardSelector'),
       startGame: document.getElementById('startGame'),
-      message: document.getElementById('message'),
-      meta: document.getElementById('meta'),
-      headerRow: document.getElementById('headerRow'),
-      boardBody: document.getElementById('boardBody'),
+      boardSelector: document.getElementById('boardSelector'),
+      matchDate: document.getElementById('matchDate'),
+      statusText: document.getElementById('statusText'),
+      currentPlayerLabel: document.getElementById('currentPlayer'),
+      frameLabel: document.getElementById('frameLabel'),
+      dartLabel: document.getElementById('dartLabel'),
+      modeLabel: document.getElementById('modeLabel'),
+      alleyLabel: document.getElementById('alleyLabel'),
       shotButtons: document.getElementById('shotButtons'),
-      endTurnBtn: document.getElementById('endTurnBtn'),
-      undoBtn: document.getElementById('undoBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      finalModal: document.getElementById('finalModal'),
-      winnerText: document.getElementById('winnerText'),
-      finalStandings: document.getElementById('finalStandings')
+      keypad: document.getElementById('keypad'),
+      undoBtn: document.getElementById('undo'),
+      endTurnBtn: document.getElementById('endTurn'),
+      resetBtn: document.getElementById('reset'),
+      message: document.getElementById('message'),
+      verticalScoreboard: document.getElementById('verticalScoreboard'),
+      historyDiv: document.getElementById('history')
     };
 
     function createPlayer(name) {
       return {
-        name: name,
-        frames: Array.from({ length: 10 }, () => ({
+        name,
+        frames: Array.from({ length: 12 }, () => ({
           lane: null, d1: null, d2: null, d3: null, v2: 0, v3: 0, total: 0, result: '', turnComplete: false
         })),
         totalScore: 0
@@ -249,186 +273,338 @@
     }
 
     function renderPlayersInputs() {
-      els.playerInputs.innerHTML = players.map((p, i) => 
-        `<input type="text" value="${escapeHtml(p.name)}" onchange="players[${i}].name = this.value" placeholder="Player ${i+1}">`
-      ).join('');
-    }
-
-    function buildKeypad() {
-      const shots = ['S', 'D', 'T', 'DB', 'SB', '0'];
-      if (boardType === 'quad') shots.splice(3, 0, 'Q');
-      
-      els.shotButtons.innerHTML = shots.map(s => 
-        `<button data-shot="${s}">${s}</button>`
-      ).join('');
+      els.playersList.innerHTML = '';
+      players.forEach((p, i) => {
+        const row = document.createElement('div');
+        row.className = 'player-row';
+        row.innerHTML = `<input data-index="${i}" value="${escapeHtml(p.name)}" />`;
+        els.playersList.appendChild(row);
+        const input = row.querySelector('input');
+        input.addEventListener('input', e => {
+          players[i].name = e.target.value;
+          renderBoard();
+        });
+      });
+      els.removePlayer.disabled = players.length <= 1;
     }
 
     function renderShotButtons() {
-      buildKeypad();
+      const type = els.boardSelector.value;
+      let buttons = ['Miss', 'Outer Single'];
+      if (type === 'quad') buttons.push('Middle');
+      buttons.push('Inner Single', 'Triple');
+      if (type === 'quad') buttons.push('Quad');
+      buttons.push('Double');
+      els.shotButtons.innerHTML = buttons.map(b => `<button class="control-btn" data-shot="${b}">${b}</button>`).join('');
+    }
+
+    function buildKeypad() {
+      els.keypad.innerHTML = '';
+      for (let i = 1; i <= 20; i++) {
+        const b = document.createElement('button');
+        b.className = 'key';
+        b.textContent = i;
+        b.addEventListener('click', () => {
+          if (!started || gameOver || dart !== 1) return;
+          applyThrow('Lane ' + i, i);
+        });
+        els.keypad.appendChild(b);
+      }
     }
 
     function updateMeta() {
-      if (!started || gameOver) {
-        els.meta.textContent = '';
+      els.modeLabel.textContent = boardType === 'quad' ? 'Quad Board' : 'Basic Board';
+      if (!started) {
+        els.statusText.textContent = 'Add players and start the game.';
+        els.currentPlayerLabel.textContent = '—';
+        els.frameLabel.textContent = '—';
+        els.dartLabel.textContent = '—';
+        els.alleyLabel.textContent = '—';
+        toggleShotButtons(true);
+        return;
+      }
+      if (gameOver) {
+        els.statusText.textContent = 'Game over';
+        els.currentPlayerLabel.textContent = '—';
+        els.frameLabel.textContent = '—';
+        els.dartLabel.textContent = '—';
+        toggleShotButtons(true);
         return;
       }
       const p = players[currentPlayer];
-      els.meta.textContent = `Current Turn: ${p.name} | Frame: ${frameIndex + 1}/10 | Dart: ${dart}/3`;
+      els.statusText.textContent = `${p.name} — Round ${frameIndex + 1}, Dart ${dart}`;
+      els.currentPlayerLabel.textContent = p.name;
+      els.frameLabel.textContent = `${frameIndex + 1}`;
+      els.dartLabel.textContent = `${dart} / 3`;
+      const f = p.frames[frameIndex];
+      els.alleyLabel.textContent = f.lane ?? '—';
+      const d1Active = dart === 1;
+      Array.from(els.keypad.children).forEach(k => {
+        k.classList.toggle('disabled', !d1Active);
+        k.disabled = !d1Active;
+      });
+      toggleShotButtons(d1Active);
+    }
+
+    function toggleShotButtons(disabled) {
+      Array.from(els.shotButtons.querySelectorAll('[data-shot]')).forEach(b => {
+        if (dart === 1 && b.dataset.shot === 'Double') {
+          b.disabled = false;
+          b.style.opacity = 1;
+        } else {
+          b.disabled = disabled;
+          b.style.opacity = disabled ? .45 : 1;
+        }
+      });
+    }
+
+    function applyThrow(shot, laneNum) {
+      if (!started || gameOver) return;
+      saveSnapshot();
+
+      const p = players[currentPlayer];
+      const f = p.frames[frameIndex];
+
+      if (dart === 1) {
+        if (shot === 'Double') {
+          f.d1 = 'Double';
+          f.lane = 'Strike';
+          f.result = 'X';
+          f.v2 = 0;
+          f.v3 = 0;
+          dart = 3;
+          setMessage(`${p.name} HIT STRIKE ON DART 1! Click End Turn.`);
+        } else {
+          f.d1 = shot;
+          f.lane = laneNum ? `Lane ${laneNum}` : shot;
+          dart = 2;
+          setMessage(`${p.name} selected ${f.lane}. Throw Dart 2.`);
+        }
+      } else if (dart === 2) {
+        f.d2 = shot;
+        f.v2 = pointValues[shot] || 0;
+        if (shot === 'Double') {
+          f.result = 'X';
+          dart = 3;
+          setMessage(`${p.name} HIT STRIKE ON DART 2! Click End Turn.`);
+        } else {
+          dart = 3;
+          setMessage(`${p.name} threw ${shot} (${f.v2} pts). Throw Dart 3.`);
+        }
+      } else if (dart === 3) {
+        f.d3 = shot;
+        f.v3 = pointValues[shot] || 0;
+        const combined = f.v2 + f.v3;
+
+        if (f.result !== 'X') {
+          if (combined >= 10) {
+            f.result = '/';
+            setMessage(`${p.name} SCORED A SPARE! Click End Turn.`);
+          } else {
+            f.result = `${combined}`;
+            setMessage(`${p.name} finished frame with ${combined} pts. Click End Turn.`);
+          }
+        } else {
+          setMessage(`${p.name} turn complete. Click End Turn.`);
+        }
+      }
+
+      calculateAllScores();
+      renderBoard();
+      updateMeta();
+    }
+
+    function endTurn() {
+      if (!started || gameOver) return;
+      const p = players[currentPlayer];
+      const f = p.frames[frameIndex];
+      if (!f.d1) {
+        setMessage('You must throw Dart 1 to pick a lane or hit Double.');
+        return;
+      }
+      f.turnComplete = true;
+      calculateAllScores();
+      currentPlayer++;
+      if (currentPlayer >= players.length) {
+        currentPlayer = 0;
+        frameIndex++;
+      }
+      dart = 1;
+      if (checkGameOver()) {
+        gameOver = true;
+        const winner = getWinner();
+        setMessage(`GAME OVER! Winner: ${winner.name} with ${winner.totalScore} pts!`);
+      } else {
+        setMessage(`Turn ended. ${players[currentPlayer].name}'s turn.`);
+      }
+      renderBoard();
+      updateMeta();
+    }
+
+    function calculateAllScores() {
+      players.forEach(p => {
+        let runningTotal = 0;
+        p.frames.forEach((f, idx) => {
+          let frameScore = 0;
+          if (f.result === 'X') {
+            frameScore = 10 + getNextTwoDartsScore(p, idx);
+          } else if (f.result === '/') {
+            frameScore = 10 + getNextDart2Score(p, idx);
+          } else {
+            frameScore = (f.v2 || 0) + (f.v3 || 0);
+          }
+          f.total = frameScore;
+          if (idx < 10 || (idx >= 10 && needsBonusRound(p, idx))) {
+            runningTotal += frameScore;
+          }
+        });
+        p.totalScore = runningTotal;
+      });
+    }
+
+    function getNextTwoDartsScore(player, currentIdx) {
+      let dartsFound = 0;
+      let score = 0;
+      for (let i = currentIdx + 1; i < player.frames.length; i++) {
+        const nextFrame = player.frames[i];
+        if (!nextFrame.d1) break;
+        if (nextFrame.result === 'X') {
+          score += 10;
+          dartsFound += 1;
+        } else {
+          if (nextFrame.d2) {
+            score += nextFrame.v2;
+            dartsFound++;
+          }
+          if (dartsFound < 2 && nextFrame.d3) {
+            score += nextFrame.v3;
+            dartsFound++;
+          }
+        }
+        if (dartsFound >= 2) break;
+      }
+      return score;
+    }
+
+    function getNextDart2Score(player, currentIdx) {
+      const nextFrame = player.frames[currentIdx + 1];
+      if (!nextFrame || !nextFrame.d1) return 0;
+      if (nextFrame.result === 'X') return 10;
+      return nextFrame.v2 || 0;
+    }
+
+    function needsBonusRound(player, frameIdx) {
+      if (frameIdx === 10) {
+        return player.frames[9].result === 'X' || player.frames[9].result === '/';
+      }
+      if (frameIdx === 11) {
+        return player.frames[9].result === 'X' && player.frames[10].result === 'X';
+      }
+      return false;
+    }
+
+    function checkGameOver() {
+      if (frameIndex < 10) return false;
+      return players.every(p => {
+        if (!p.frames[9].turnComplete) return false;
+        if (p.frames[9].result === 'X') {
+          if (!p.frames[10].turnComplete) return false;
+          if (p.frames[10].result === 'X') {
+            return p.frames[11].turnComplete;
+          }
+        } else if (p.frames[9].result === '/') {
+          return p.frames[10].turnComplete;
+        }
+        return true;
+      });
+    }
+
+    function getWinner() {
+      let top = players[0];
+      players.forEach(p => {
+        if (p.totalScore > top.totalScore) top = p;
+      });
+      return top;
+    }
+
+    function renderBoard() {
+      els.verticalScoreboard.innerHTML = '';
+      players.forEach((p, pi) => {
+        const card = document.createElement('div');
+        card.className = 'player-card' + (started && !gameOver && pi === currentPlayer ? ' active-card' : '');
+        let rowsHtml = '';
+        for (let f = 0; f < 10; f++) {
+          const fr = p.frames[f];
+          let subText = [fr.d1, fr.d2, fr.d3].filter(Boolean).join(', ');
+          let scoreDisplay = fr.result !== '' ? fr.result : (fr.total || '-');
+          rowsHtml += `
+            <tr>
+              <td class="frame-num">F${f + 1}</td>
+              <td class="frame-score">${scoreDisplay}</td>
+              <td class="darts-cell">${subText || '—'}</td>
+            </tr>
+          `;
+        }
+        let b1 = p.frames[10].result !== '' ? p.frames[10].result : '';
+        let b2 = p.frames[11].result !== '' ? p.frames[11].result : '';
+        if (b1 || b2) {
+          rowsHtml += `
+            <tr>
+              <td class="frame-num">Bonus</td>
+              <td class="frame-score">${b1} ${b2}</td>
+              <td class="darts-cell">—</td>
+            </tr>
+          `;
+        }
+        card.innerHTML = `
+          <div class="player-card-header">
+            <span class="player-card-name">${escapeHtml(p.name)}</span>
+            <span class="player-card-score">${p.totalScore} pts</span>
+          </div>
+          <table class="v-table">
+            <thead>
+              <tr>
+                <th>Frame</th>
+                <th>Score</th>
+                <th>Darts Thrown</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        `;
+        els.verticalScoreboard.appendChild(card);
+      });
+    }
+
+    function saveSnapshot() {
+      historyStack.push(JSON.parse(JSON.stringify({
+        players, started, gameOver, currentPlayer, frameIndex, dart
+      })));
+      if (historyStack.length > 100) historyStack.shift();
+    }
+
+    function undo() {
+      if (!historyStack.length) return;
+      const state = historyStack.pop();
+      players = state.players;
+      started = state.started;
+      gameOver = state.gameOver;
+      currentPlayer = state.currentPlayer;
+      frameIndex = state.frameIndex;
+      dart = state.dart;
+      renderBoard();
+      updateMeta();
+      setMessage('Last shot undone.');
     }
 
     function setMessage(msg) {
       els.message.textContent = msg;
     }
 
-    function renderBoard() {
-      let headHtml = '<th>Player</th>';
-      for (let i = 1; i <= 10; i++) headHtml += `<th>F${i}</th>`;
-      headHtml += '<th>Total</th>';
-      els.headerRow.innerHTML = headHtml;
-
-      els.boardBody.innerHTML = players.map((p, pIdx) => {
-        const isActive = started && !gameOver && pIdx === currentPlayer;
-        let row = `<tr class="${isActive ? 'active-player' : ''}"><td><strong>${escapeHtml(p.name)}</strong></td>`;
-        
-        p.frames.forEach(f => {
-          let cellStr = f.result || '-';
-          row += `<td>${cellStr}</td>`;
-        });
-
-        row += `<td><strong>${p.totalScore}</strong></td></tr>`;
-        return row;
-      }).join('');
-    }
-
-    function saveState() {
-      historyStack.push(JSON.stringify({
-        players, currentPlayer, frameIndex, dart, started, gameOver
-      }));
-    }
-
-    function undo() {
-      if (!historyStack.length) return;
-      const state = JSON.parse(historyStack.pop());
-      players = state.players;
-      currentPlayer = state.currentPlayer;
-      frameIndex = state.frameIndex;
-      dart = state.dart;
-      started = state.started;
-      gameOver = state.gameOver;
-      renderBoard();
-      updateMeta();
-      setMessage('Last action undone.');
-    }
-
-    function applyThrow(shot) {
-      if (!started || gameOver) return;
-      saveState();
-
-      const p = players[currentPlayer];
-      const f = p.frames[frameIndex];
-
-      if (dart === 1) {
-        f.d1 = shot;
-        if (shot === 'D') {
-          f.result = 'X';
-          f.total = 30;
-          f.turnComplete = true;
-        } else {
-          f.lane = shot;
-          f.result = `${shot} | - | -`;
-        }
-      } else if (dart === 2) {
-        f.d2 = shot;
-        f.v2 = calculatePoints(shot);
-        f.result = `${f.lane} | ${shot} | -`;
-      } else if (dart === 3) {
-        f.d3 = shot;
-        f.v3 = calculatePoints(shot);
-        f.total = f.v2 + f.v3;
-        f.result = `${f.lane} | ${f.d2} | ${f.d3} (${f.total})`;
-        f.turnComplete = true;
-      }
-
-      calculateTotals();
-      renderBoard();
-
-      if (f.turnComplete) {
-        endTurn();
-      } else {
-        dart++;
-        updateMeta();
-      }
-    }
-
-    function calculatePoints(shot) {
-      switch (shot) {
-        case 'S': return 1;
-        case 'D': return 2;
-        case 'T': return 3;
-        case 'Q': return 4;
-        case 'DB': return 5;
-        case 'SB': return 2;
-        default: return 0;
-      }
-    }
-
-    function calculateTotals() {
-      players.forEach(p => {
-        p.totalScore = p.frames.reduce((sum, f) => sum + (f.total || 0), 0);
-      });
-    }
-
-    function endTurn() {
-      if (!started || gameOver) return;
-
-      const p = players[currentPlayer];
-      p.frames[frameIndex].turnComplete = true;
-
-      if (currentPlayer < players.length - 1) {
-        currentPlayer++;
-        dart = 1;
-      } else {
-        currentPlayer = 0;
-        dart = 1;
-        frameIndex++;
-      }
-
-      if (checkGameOver()) {
-        gameOver = true;
-        showFinalScoreboard();
-      } else {
-        setMessage(`Turn ended. ${players[currentPlayer].name}'s turn.`);
-      }
-
-      updateMeta();
-      renderBoard();
-    }
-
-    function checkGameOver() {
-      return frameIndex >= 10;
-    }
-
-    function showFinalScoreboard() {
-      const sortedPlayers = [...players].sort((a, b) => b.totalScore - a.totalScore);
-      const winner = sortedPlayers[0];
-
-      els.winnerText.textContent = `Winner: ${winner.name} (${winner.totalScore} pts)`;
-
-      els.finalStandings.innerHTML = sortedPlayers.map((p, rank) => `
-        <div class="standing-card ${rank === 0 ? 'first' : ''}">
-          <span style="font-weight: 800;">#${rank + 1} ${escapeHtml(p.name)}</span>
-          <span style="font-weight: 900; color: var(--gold);">${p.totalScore} pts</span>
-        </div>
-      `).join('');
-
-      setMessage(`GAME OVER! Winner: ${winner.name} with ${winner.totalScore} pts!`);
-      els.finalModal.style.display = 'flex';
-    }
-
     function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, m => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[m]));
+      return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
 
     // Event Listeners
@@ -461,12 +637,12 @@
       frameIndex = 0;
       dart = 1;
       players.forEach(p => {
-        p.frames = Array.from({ length: 10 }, () => ({
+        p.frames = Array.from({ length: 12 }, () => ({
           lane: null, d1: null, d2: null, d3: null, v2: 0, v3: 0, total: 0, result: '', turnComplete: false
         }));
         p.totalScore = 0;
       });
-      setMessage('Game started! Throw Dart 1 to pick a lane.');
+      setMessage('Game started! Dart 1 selects lane or hit Double for Strike.');
       renderBoard();
       updateMeta();
     });
@@ -491,6 +667,7 @@
     players = [createPlayer('Alice'), createPlayer('Bob')];
     renderPlayersInputs();
     renderShotButtons();
+    buildKeypad();
     renderBoard();
     updateMeta();
   </script>
